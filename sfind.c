@@ -5,6 +5,7 @@
 #include <dirent.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/wait.h>
 
 #define NORMAL_COLOR  "\x1B[0m"
 #define GREEN  "\x1B[32m"
@@ -57,7 +58,7 @@ void nameFunc(char *file, char* path){
 }
 
 
-
+/*
 int c (int argc, char *argv[]){
     
  signal(SIGINT, sig_usr);
@@ -90,9 +91,9 @@ int d(void)
   return(0);
 }
 
+*/
 
-
-void show_dir_content(char * path, char * file)
+/*void show_dir_content(char * path, char * file)
 {
  
     printf("Path: %s\n", path);
@@ -134,27 +135,130 @@ void show_dir_content(char * path, char * file)
         //printf("%s%s\n",BLUE, dir->d_name);
     }
     closedir(d); // finally close the directory
-}
+}*/
 
+void show_dir_conten(char * path,char * file);
 
-void show_dir_conten(char * path,char * file)
+void show_dir_content(char * path,char * file)
 {
+     //printf("Path: %s\n", path);
   DIR * d = opendir(path); 
   if(d==NULL) return; 
   struct dirent * dir;
   while ((dir = readdir(d)) != NULL) 
     {
-      if(dir-> d_type != DT_DIR && strcmp(dir->d_name,file)==0) 
+      if(dir-> d_type != DT_DIR && strcmp(dir->d_name,file)==0) {
         printf("%s/%s\n", path, dir->d_name);
+        return;
+      }
       else
       if(dir -> d_type == DT_DIR && strcmp(dir->d_name,".")!=0 && strcmp(dir->d_name,"..")!=0 ) // if it is a directory
       {
-          pid_t pid=fork();
+       
+        char d_path[255]; 
+        sprintf(d_path, "%s/%s", path, dir->d_name);
+        show_dir_content(d_path,file); // recall with the new path
+      }
+      
+    }
+    closedir(d); // finally close the directory
+}
+
+/*
+void show_dir_conten(char * path,char * file)
+{
+     //printf("Path: %s\n", path);
+  DIR * d = opendir(path); 
+  if(d==NULL) return; 
+  struct dirent * dir;
+  while ((dir = readdir(d)) != NULL) 
+    {
+      if(dir-> d_type != DT_DIR && strcmp(dir->d_name,file)==0) {
+        printf("%s/%s\n", path, dir->d_name);
+        return;
+      }
+      else
+      if(dir -> d_type == DT_DIR && strcmp(dir->d_name,".")!=0 && strcmp(dir->d_name,"..")!=0 ) // if it is a directory
+      {
+        pid_t pid=fork();
         if(pid==0){
         char d_path[255]; 
         sprintf(d_path, "%s/%s", path, dir->d_name);
-         //execlp("show_dir_conten","show_dir_conten",d_path, file,NULL);
-        show_dir_conten(d_path,file); // recall with the new path
+        //execlp("show_dir_content","show_dir_content",d_path, file,NULL);
+        show_dir_content(d_path,file); // recall with the new path
+      }
+      }
+    }
+    closedir(d); // finally close the directory
+}
+
+
+
+
+void func (char * path, char *file){
+    
+    DIR * d= opendir(path); 
+ // if(d==NULL) return; 
+  struct dirent * dir;
+  
+  while((d = opendir(path))!=NULL)
+  {
+  printf("Path: %s\n", path);
+
+      
+   while ((dir = readdir(d)) != NULL)
+    {
+      if(dir -> d_type == DT_DIR && strcmp(dir->d_name,".")!=0 && strcmp(dir->d_name,"..")!=0 ) // if it is a directory
+      {
+            //printf("D name: %s%s\n", BLUE, path);
+        pid_t pid=fork();
+        if(pid==0){
+        char d_path[255]; 
+        sprintf(d_path, "%s/%s", path, dir->d_name);
+        //execlp("show_dir_content","show_dir_content",d_path, file,NULL);
+        //show_dir_content(d_path,file); // recall with the new path
+        strcpy(path,d_path);
+      }
+      
+      }
+      
+       if(dir-> d_type != DT_DIR && strcmp(dir->d_name,file)==0) {
+        printf("%s/%s\n", path, dir->d_name);
+        return;
+      }
+
+    }
+    
+  }
+    
+    
+    closedir(d); // finally close the directory
+    
+}
+*/
+
+void namefunc(char * path,char * file)
+{
+     
+  DIR * d = opendir(path); 
+  if(d==NULL) return; 
+  struct dirent * dir;
+  while ((dir = readdir(d)) != NULL) 
+    {//printf("Path: %s\n", path);
+      if(dir-> d_type != DT_DIR && strcmp(dir->d_name,file)==0) {
+        printf("%s/%s\n", path, dir->d_name);
+        return;
+      }
+      else
+      if(dir -> d_type == DT_DIR && strcmp(dir->d_name,".")!=0 && strcmp(dir->d_name,"..")!=0 ) // if it is a directory
+      {
+       if(fork()>0)
+           wait(NULL);
+       
+       else{
+        char d_path[255]; 
+        sprintf(d_path, "%s/%s", path, dir->d_name);
+        show_dir_content(d_path,file); // recall with the new path
       }
       }
     }
@@ -163,16 +267,16 @@ void show_dir_conten(char * path,char * file)
 
 int main(int argc, char **argv)
 {
-     signal(SIGINT, sig_usr);
+     //signal(SIGINT, sig_usr);
  
      
 
 //    show_dir_content(argv[1], argv[2]);
     
      
-     show_dir_conten(argv[1],argv[2]);
+     //show_dir_conten(argv[1],argv[2]);
      
-     
+     namefunc(argv[1],argv[2]);
      
      
   return(0);
