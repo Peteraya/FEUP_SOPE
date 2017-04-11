@@ -6,12 +6,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
 
 #define NORMAL_COLOR  "\x1B[0m"
 #define GREEN  "\x1B[32m"
 #define BLUE  "\x1B[34m"
 
 #define MAXCHAR 4096
+
+unsigned long octalValue;
 
 
 void sig_usr(int signo) { 
@@ -32,11 +35,25 @@ if(res=='Y' || res=='y'){
 }
 
 
-void nameFunc(char * executavel,char * path, char * mode, char * file)
+void nameFunc(char * executavel,char * path, char * mode, char * file, char * cmd)
 {
+     if(cmd==NULL)
+     cmd="-print";  
      
      if(strcmp(file,"d")==0 && strcmp("-type",mode)==0)
             printf("%s\n", path);
+     
+     /*else if(strcmp("-perm", mode) == 0) {
+          struct stat fileStat;
+          stat(path,&fileStat);
+          //printf("%o \n",fileStat.st_mode);
+          int statPerm = fileStat.st_mode&0777;
+          char* ptr;
+          if(statPerm == strtol(file, &ptr, 8))
+               //printf("%s\n", path);
+             //printf("%s/%s\n", path, dir->d_name);
+          
+      }*/
      
   DIR * d = opendir(path); 
   if(d==NULL) return; 
@@ -45,9 +62,26 @@ void nameFunc(char * executavel,char * path, char * mode, char * file)
     {
         //printf("path: %s\n",path);
       if(strcmp(dir->d_name,file)==0 && strcmp("-name",mode)==0) {
-        printf("%s/%s\n", path, dir->d_name);
-        return;
+            
+          if(strcmp("-print",cmd)==0)
+                printf("%s/%s\n", path, dir->d_name);
+          
+          else if(strcmp("-delete",cmd)==0){
+           if(dir->d_type == DT_REG){
+           char d_path[255]; 
+        sprintf(d_path, "%s/%s", path, dir->d_name);
+              unlink(d_path);
+          }
+          else{
+               char d_path[255]; 
+        sprintf(d_path, "%s/%s", path, dir->d_name);
+              rmdir(d_path);
+          }
+          
+          }
+            return;
       }
+      
       
             if(strcmp("-type",mode)==0){
                 if(dir -> d_type == DT_LNK && strcmp("l",file)==0) {
@@ -68,7 +102,7 @@ void nameFunc(char * executavel,char * path, char * mode, char * file)
        else{
         char d_path[255]; 
         sprintf(d_path, "%s/%s", path, dir->d_name);
-        execlp(executavel,executavel,d_path, mode,file,NULL); 
+        execlp(executavel,executavel,d_path, mode,file,cmd,NULL); 
       }
       }
     }
@@ -122,10 +156,14 @@ int main(int argc, char **argv)
 {
   // char* aux="/home";
      //signal(SIGINT, sig_usr);
-  // printf("Arg 0 %s\n",argv[1]);
+  //printf("Arg 0 %s\n",argv[4]);
     
+   /* if (strcmp(argv[2], "-perm") == 0) {
+      char* ptr;
+      octalValue = strtol(argv[3], &ptr, 8); 
+    }*/
     
-   nameFunc(argv[0],argv[1],argv[2], argv[3]);
+   nameFunc(argv[0],argv[1],argv[2], argv[3], argv[4]);
         
     //typeFunc(argv[0],argv[1],argv[2]);
     
