@@ -13,6 +13,8 @@
 
 #define MAXCHAR 4096
 
+char * init_path = "/home";
+
 void sig_usr(int signo) { 
 
 char res;
@@ -31,15 +33,16 @@ if(res=='Y' || res=='y'){
 }
 
 
-void namefunc(char * path,char * file, char * executavel)
+void nameFunc(char * executavel,char * path, char * mode, char * file)
 {
      
   DIR * d = opendir(path); 
   if(d==NULL) return; 
   struct dirent * dir;
   while ((dir = readdir(d)) != NULL) 
-    {//printf("Path: %s\n", path);
-      if(strcmp(dir->d_name,file)==0) {
+    {
+        //printf("path: %s\n",path);
+      if(strcmp(dir->d_name,file)==0 && strcmp("-name",mode)==0) {
         printf("%s/%s\n", path, dir->d_name);
         return;
       }
@@ -53,19 +56,65 @@ void namefunc(char * path,char * file, char * executavel)
        else{
         char d_path[255]; 
         sprintf(d_path, "%s/%s", path, dir->d_name);
-        execlp(executavel,executavel,d_path, file,NULL); 
+        execlp(executavel,executavel,d_path, mode,file,NULL); 
       }
       }
     }
     closedir(d); // finally close the directory
 }
 
+
+void typeFunc(char * executavel, char * path, char * c)
+{
+   
+
+  DIR * d = opendir(path); 
+  if(d==NULL) return; 
+  struct dirent * dir;
+  
+  while ((dir = readdir(d)) != NULL) 
+    {
+        
+         if(dir -> d_type == DT_LNK && strcmp("l",c)==0) {
+        printf("%s/%s\n", path, dir->d_name);
+      }
+        
+        if(dir -> d_type == DT_REG && strcmp("f",c)==0) {
+        printf("%s/%s\n", path, dir->d_name);
+      }
+     
+      if(dir -> d_type == DT_DIR && strcmp(dir->d_name,".")!=0 && strcmp(dir->d_name,"..")!=0 ) 
+      {
+          if(strcmp(c,"d")==0)
+            printf("%s/%s\n", path,dir->d_name);
+          
+          pid_t pid=fork();
+       if(pid>0)
+           waitpid(pid, NULL, 0);
+       
+       else{
+        char d_path[255]; 
+        sprintf(d_path, "%s/%s", path, dir->d_name);
+        execlp(executavel,executavel,d_path,c, NULL); 
+      }
+      }
+    }
+    closedir(d); // finally close the directory
+}
+
+
 int main(int argc, char **argv)
 {
-     signal(SIGINT, sig_usr);
- 
-     namefunc(argv[1],argv[2],argv[0]);
+  // char* aux="/home";
+     //signal(SIGINT, sig_usr);
+  // printf("Arg 0 %s\n",argv[1]);
+    
+    // nameFunc(argv[1],argv[2],argv[0]);
+    
+//     nameFunc(argv[0],argv[1],argv[2], argv[3]);
      
+    typeFunc(argv[0],argv[1],argv[2]);
      
   return(0);
 }
+
