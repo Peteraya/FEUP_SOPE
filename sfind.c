@@ -35,6 +35,9 @@ if(res=='Y' || res=='y'){
 void nameFunc(char * executavel,char * path, char * mode, char * file)
 {
      
+     if(strcmp(file,"d")==0 && strcmp("-type",mode)==0)
+            printf("%s\n", path);
+     
   DIR * d = opendir(path); 
   if(d==NULL) return; 
   struct dirent * dir;
@@ -58,9 +61,6 @@ void nameFunc(char * executavel,char * path, char * mode, char * file)
     
       if(dir -> d_type == DT_DIR && strcmp(dir->d_name,".")!=0 && strcmp(dir->d_name,"..")!=0 ) 
       {
-          if(strcmp(file,"d")==0 && strcmp("-type",mode)==0)
-            printf("%s/%s\n", path,dir->d_name);
-          
           pid_t pid=fork();
        if(pid>0)
            waitpid(pid, NULL, 0);
@@ -81,7 +81,9 @@ void typeFunc(char * executavel, char * path, char * c)
    
 
 
-
+ if(strcmp(c,"d")==0)
+           printf("%s\n", path);
+ 
   DIR * d = opendir(path); 
   if(d==NULL) return; 
   struct dirent * dir;
@@ -99,8 +101,6 @@ void typeFunc(char * executavel, char * path, char * c)
      
       else if(dir -> d_type == DT_DIR && strcmp(dir->d_name,".")!=0 && strcmp(dir->d_name,"..")!=0 ) 
       {
-          if(strcmp(c,"d")==0)
-            printf("%s/%s\n", path,dir->d_name);
         
           pid_t pid=fork();
        if(pid>0)
