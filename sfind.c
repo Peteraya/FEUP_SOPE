@@ -13,7 +13,6 @@
 
 #define MAXCHAR 4096
 
-char * init_path = "/home";
 
 void sig_usr(int signo) { 
 
@@ -46,9 +45,22 @@ void nameFunc(char * executavel,char * path, char * mode, char * file)
         printf("%s/%s\n", path, dir->d_name);
         return;
       }
-      else
+      
+            if(strcmp("-type",mode)==0){
+                if(dir -> d_type == DT_LNK && strcmp("l",file)==0) {
+        printf("%s/%s\n", path, dir->d_name);
+      }
+        
+        if(dir -> d_type == DT_REG && strcmp("f",file)==0) {
+        printf("%s/%s\n", path, dir->d_name);
+      }
+            }
+    
       if(dir -> d_type == DT_DIR && strcmp(dir->d_name,".")!=0 && strcmp(dir->d_name,"..")!=0 ) 
       {
+          if(strcmp(file,"d")==0 && strcmp("-type",mode)==0)
+            printf("%s/%s\n", path,dir->d_name);
+          
           pid_t pid=fork();
        if(pid>0)
            waitpid(pid, NULL, 0);
@@ -68,26 +80,28 @@ void typeFunc(char * executavel, char * path, char * c)
 {
    
 
+
+
   DIR * d = opendir(path); 
   if(d==NULL) return; 
   struct dirent * dir;
   
   while ((dir = readdir(d)) != NULL) 
     {
-        
+
          if(dir -> d_type == DT_LNK && strcmp("l",c)==0) {
         printf("%s/%s\n", path, dir->d_name);
       }
         
-        if(dir -> d_type == DT_REG && strcmp("f",c)==0) {
+        else if(dir -> d_type == DT_REG && strcmp("f",c)==0) {
         printf("%s/%s\n", path, dir->d_name);
       }
      
-      if(dir -> d_type == DT_DIR && strcmp(dir->d_name,".")!=0 && strcmp(dir->d_name,"..")!=0 ) 
+      else if(dir -> d_type == DT_DIR && strcmp(dir->d_name,".")!=0 && strcmp(dir->d_name,"..")!=0 ) 
       {
           if(strcmp(c,"d")==0)
             printf("%s/%s\n", path,dir->d_name);
-          
+        
           pid_t pid=fork();
        if(pid>0)
            waitpid(pid, NULL, 0);
@@ -103,17 +117,18 @@ void typeFunc(char * executavel, char * path, char * c)
 }
 
 
+
 int main(int argc, char **argv)
 {
   // char* aux="/home";
      //signal(SIGINT, sig_usr);
   // printf("Arg 0 %s\n",argv[1]);
     
-    // nameFunc(argv[1],argv[2],argv[0]);
     
-//     nameFunc(argv[0],argv[1],argv[2], argv[3]);
-     
-    typeFunc(argv[0],argv[1],argv[2]);
+   nameFunc(argv[0],argv[1],argv[2], argv[3]);
+        
+    //typeFunc(argv[0],argv[1],argv[2]);
+    
      
   return(0);
 }
