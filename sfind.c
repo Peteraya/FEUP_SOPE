@@ -35,25 +35,28 @@ if(res=='Y' || res=='y'){
 }
 
 
-/*void commandExecution(char* cmd, char* path, char* dir_name, unsigned char dir_type){
+void commandExecutionFiles(char* cmd, char* path, char* dir_name, unsigned char dir_type){
     
-    if(strcmp("-print",cmd)==0)
-                printf("%s/%s\n", path, dir->d_name);
+    
+            if(strcmp("-print",cmd)==0)
+                printf("%s/%s\n", path, dir_name);
           
           else if(strcmp("-delete",cmd)==0){
-           if(dir->d_type == DT_REG){
-           char d_path[255]; 
-        sprintf(d_path, "%s/%s", path, dir->d_name);
+           
+              char d_path[255]; 
+        sprintf(d_path, "%s/%s", path, dir_name);
+              if(dir_type == DT_REG){
+           
               unlink(d_path);
           }
           else{
-               char d_path[255]; 
-        sprintf(d_path, "%s/%s", path, dir->d_name);
-              rmdir(d_path);
+              
+              execlp("rmdir","rmdir",d_path,NULL);
           }
           
           }
-}*/
+          
+}
 
 void nameFunc(char * executavel,char * path, char * mode, char * file, char * cmd)
 {
@@ -67,21 +70,7 @@ void nameFunc(char * executavel,char * path, char * mode, char * file, char * cm
 
                     
       }
-         
-         //printf("%s\n", path);
-       
-     
-     /*else if(strcmp("-perm", mode) == 0) {
-          struct stat fileStat;
-          stat(path,&fileStat);
-          //printf("%o \n",fileStat.st_mode);
-          int statPerm = fileStat.st_mode&0777;
-          char* ptr;
-          if(statPerm == strtol(file, &ptr, 8))
-               //printf("%s\n", path);
-             //printf("%s/%s\n", path, dir->d_name);
-          
-      }*/
+            
      
   DIR * d = opendir(path); 
   if(d==NULL) return; 
@@ -91,22 +80,7 @@ void nameFunc(char * executavel,char * path, char * mode, char * file, char * cm
        
       if(strcmp(dir->d_name,file)==0 && strcmp("-name",mode)==0) {
             
-          if(strcmp("-print",cmd)==0)
-                printf("%s/%s\n", path, dir->d_name);
-          
-          else if(strcmp("-delete",cmd)==0){
-           if(dir->d_type == DT_REG){
-           char d_path[255]; 
-        sprintf(d_path, "%s/%s", path, dir->d_name);
-              unlink(d_path);
-          }
-          else{
-               char d_path[255]; 
-        sprintf(d_path, "%s/%s", path, dir->d_name);
-              execlp("rmdir","rmdir",d_path,NULL);
-          }
-          
-          }
+          commandExecutionFiles(cmd, path, dir->d_name,dir->d_type);
             return;
       }
       
@@ -114,33 +88,13 @@ void nameFunc(char * executavel,char * path, char * mode, char * file, char * cm
             if(strcmp("-type",mode)==0){
     
                 
-                if(dir -> d_type == DT_LNK && strcmp("l",file)==0) {
-           
-                    if(strcmp("-print",cmd)==0)
-                printf("%s/%s\n", path, dir->d_name);
-          
-          else if(strcmp("-delete",cmd)==0){
-           
-           char d_path[255]; 
-        sprintf(d_path, "%s/%s", path, dir->d_name);
-              unlink(d_path);
-          
-          }
+                if(dir -> d_type == DT_LNK && strcmp("l",file)==0) 
+                    commandExecutionFiles(cmd, path, dir->d_name,dir->d_type);
                     
-      }
-        
-        if(dir -> d_type == DT_REG && strcmp("f",file)==0) {
-       
-            if(strcmp("-print",cmd)==0)
-                printf("%s/%s\n", path, dir->d_name);
-          
-          else if(strcmp("-delete",cmd)==0){
     
-           char d_path[255]; 
-        sprintf(d_path, "%s/%s", path, dir->d_name);
-              unlink(d_path);
-          }
-      }
+        if(dir -> d_type == DT_REG && strcmp("f",file)==0)
+            commandExecutionFiles(cmd, path, dir->d_name,dir->d_type);
+      
             }
     
       if(dir -> d_type == DT_DIR && strcmp(dir->d_name,".")!=0 && strcmp(dir->d_name,"..")!=0 ) 
