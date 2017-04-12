@@ -17,11 +17,13 @@
 unsigned long octalValue;
 
 
-void sig_usr(int signo) { 
+/*void sigint_handler(int signo) { 
 
 char res;
 
 if (signo == SIGINT){ 
+
+
 printf("Are you sure you want to terminate (Y/N)?\n");
 scanf("%c",&res);
 
@@ -32,7 +34,49 @@ if(res=='Y' || res=='y'){
 	
 }
 
+}*/
+
+
+void sig_handler(int sig){
+	if(sig == SIGINT){
+
+		char res;
+		printf("\nAre you sure you want to terminate (Y/N)?\n");
+		kill(0, SIGTSTP); //envia sinal Stop ao processo pai
+
+		do{
+			read(STDIN_FILENO, &res, 1);
+			if (res == 'Y' || res == 'y')
+			{
+				kill(0,SIGTERM); //envia sinal de Terminacao ao proceso pai
+			}else
+				if (res == 'N' || res == 'n')
+				{
+					kill(0,SIGCONT); //envia sinal ao processo pai para continuar
+					break;
+				}
+		}while(res != 'Y' && res != 'y' && res != 'N' && res != 'n');
+	}
+
 }
+
+struct sigaction oldsigaction; //declarar antes de subscribe_SIGINT
+
+//chamar esta função logo no incicio do main
+void subscribe_SIGINT(){
+
+    sigaction(SIGTSTP, 0,&oldsigaction);
+	struct sigaction newsigaction;
+
+	newsigaction = oldsigaction;
+	newsigaction.sa_handler = &sig_handler;
+
+	sigaction(SIGTSTP, &newsigaction,0);
+	signal(SIGINT, sig_handler);
+}
+
+
+
 
 
 void commandExecutionFiles(char* cmd, char* path, char* dir_name, unsigned char dir_type,char* execCommand){
@@ -92,6 +136,23 @@ void nameFunc(char * executavel,char * path, char * mode, char * file, char * cm
   while ((dir = readdir(d)) != NULL) 
     {
        
+        if(strcmp("-perm", mode) == 0) {
+                    struct stat fileStat;
+                    char* dir_path = (char *)malloc(sizeof(char)*MAXCHAR);
+                    sprintf(dir_path, "%s/%s", path, dir->d_name);
+                    
+                    stat(dir_path,&fileStat);
+                    char * ptr;
+                    int statPerm = fileStat.st_mode&0777;
+            
+                    
+                    if(statPerm == strtol(file, &ptr, 8) && !(strcmp(dir->d_name,".") == 0 || strcmp(dir->d_name,"..") == 0 || (dir->d_name[0] == '.')))
+                            printf("%s\n", dir_path);
+                    
+}
+      
+        
+        
       if(strcmp(dir->d_name,file)==0 && strcmp("-name",mode)==0) {
             
           commandExecutionFiles(cmd, path, dir->d_name,dir->d_type,execCommand);
@@ -109,9 +170,8 @@ void nameFunc(char * executavel,char * path, char * mode, char * file, char * cm
         if(dir -> d_type == DT_REG && strcmp("f",file)==0){
             
             
-            //printf("OLAAAAAAA\n");
             commandExecutionFiles(cmd, path, dir->d_name,dir->d_type,execCommand);
-            //printf("ADEUSSS\n");
+           
             }
             
             
@@ -189,20 +249,20 @@ void nameFunc(char * executavel,char * path, char * mode, char * file, char * cm
 
 int main(int argc, char **argv)
 {
-  // char* aux="/home";
-     //signal(SIGINT, sig_usr);
-  //printf("Arg 0 %s\n",argv[4]);
+  
+   // signal(SIGINT, sigint_handler);
+
     
    /* if (strcmp(argv[2], "-perm") == 0) {
       char* ptr;
       octalValue = strtol(argv[3], &ptr, 8); 
     }*/
+   
+   subscribe_SIGINT();
     
    nameFunc(argv[0],argv[1],argv[2], argv[3], argv[4],argv[5]);
-        
-   // typeFunc(argv[0],argv[1],argv[2]);
     
-     
-  return(0);
+  
+  exit(0);
 }
 
