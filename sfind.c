@@ -28,23 +28,31 @@ scanf("%c",&res);
 if(res=='Y' || res=='y'){
     signal(SIGINT, SIG_DFL);
     raise(SIGINT);
-}
+}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
 	
 }
 
 }
 
 
-void commandExecutionFiles(char* cmd, char* path, char* dir_name, unsigned char dir_type){
+void commandExecutionFiles(char* cmd, char* path, char* dir_name, unsigned char dir_type,char* execCommand){
     
+    char d_path[255]; 
+        sprintf(d_path, "%s/%s", path, dir_name);
     
             if(strcmp("-print",cmd)==0)
-                printf("%s/%s\n", path, dir_name);
+                printf("%s\n", d_path);
+            
+             if(strcmp("-exec",cmd)==0){
+                if(fork()==0)
+                    execlp(execCommand,execCommand, d_path,NULL);
+                else
+                    wait(NULL);
+             }
           
           else if(strcmp("-delete",cmd)==0){
            
-              char d_path[255]; 
-        sprintf(d_path, "%s/%s", path, dir_name);
+              
               if(dir_type == DT_REG){
            
               unlink(d_path);
@@ -58,7 +66,7 @@ void commandExecutionFiles(char* cmd, char* path, char* dir_name, unsigned char 
           
 }
 
-void nameFunc(char * executavel,char * path, char * mode, char * file, char * cmd)
+void nameFunc(char * executavel,char * path, char * mode, char * file, char * cmd,char * execCommand)
 {
      if(cmd==NULL)
      cmd="-print";  
@@ -68,6 +76,12 @@ void nameFunc(char * executavel,char * path, char * mode, char * file, char * cm
                     if(strcmp("-print",cmd)==0)
                 printf("%s\n", path);
 
+                if(strcmp("-exec",cmd)==0){
+                if(fork()==0)
+                    execlp(execCommand,execCommand, path,NULL);
+                else
+                    wait(NULL);
+             }
                     
       }
             
@@ -80,7 +94,7 @@ void nameFunc(char * executavel,char * path, char * mode, char * file, char * cm
        
       if(strcmp(dir->d_name,file)==0 && strcmp("-name",mode)==0) {
             
-          commandExecutionFiles(cmd, path, dir->d_name,dir->d_type);
+          commandExecutionFiles(cmd, path, dir->d_name,dir->d_type,execCommand);
             return;
       }
       
@@ -89,12 +103,18 @@ void nameFunc(char * executavel,char * path, char * mode, char * file, char * cm
     
                 
                 if(dir -> d_type == DT_LNK && strcmp("l",file)==0) 
-                    commandExecutionFiles(cmd, path, dir->d_name,dir->d_type);
+                    commandExecutionFiles(cmd, path, dir->d_name,dir->d_type,execCommand);
                     
     
-        if(dir -> d_type == DT_REG && strcmp("f",file)==0)
-            commandExecutionFiles(cmd, path, dir->d_name,dir->d_type);
-      
+        if(dir -> d_type == DT_REG && strcmp("f",file)==0){
+            
+            
+            //printf("OLAAAAAAA\n");
+            commandExecutionFiles(cmd, path, dir->d_name,dir->d_type,execCommand);
+            //printf("ADEUSSS\n");
+            }
+            
+            
             }
     
       if(dir -> d_type == DT_DIR && strcmp(dir->d_name,".")!=0 && strcmp(dir->d_name,"..")!=0 ) 
@@ -106,7 +126,7 @@ void nameFunc(char * executavel,char * path, char * mode, char * file, char * cm
        else{
         char d_path[255]; 
         sprintf(d_path, "%s/%s", path, dir->d_name);
-        execlp(executavel,executavel,d_path, mode,file,cmd,NULL); 
+        execlp(executavel,executavel,d_path, mode,file,cmd,execCommand,NULL); 
       }
       }
       
@@ -116,14 +136,14 @@ void nameFunc(char * executavel,char * path, char * mode, char * file, char * cm
            
                     if(strcmp("-delete",cmd)==0)
                         execlp("rmdir","rmdir",path,NULL);
-
                     
+    
       }
     closedir(d); // finally close the directory
 }
 
 
-void typeFunc(char * executavel, char * path, char * c)
+/*void typeFunc(char * executavel, char * path, char * c)
 {
    
 
@@ -163,7 +183,7 @@ void typeFunc(char * executavel, char * path, char * c)
     
     
     closedir(d); // finally close the directory
-}
+}*/
 
 
 
@@ -178,7 +198,7 @@ int main(int argc, char **argv)
       octalValue = strtol(argv[3], &ptr, 8); 
     }*/
     
-   nameFunc(argv[0],argv[1],argv[2], argv[3], argv[4]);
+   nameFunc(argv[0],argv[1],argv[2], argv[3], argv[4],argv[5]);
         
    // typeFunc(argv[0],argv[1],argv[2]);
     
