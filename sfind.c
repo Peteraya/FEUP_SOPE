@@ -129,6 +129,23 @@ void nameFunc(char * executavel,char * path, char * mode, char * file, char * cm
                     
       }
             
+            
+             if(strcmp("-perm", mode) == 0) {
+                    struct stat fileStat;
+                   
+                    
+                    stat(path,&fileStat);
+                    char * ptr;
+                    int statPerm = fileStat.st_mode&0777;
+            
+                    //printf("Perm: %o\n", statPerm);
+                    
+                    if(statPerm == strtol(file, &ptr, 8) && !(strcmp(path,".") == 0 || strcmp(path,"..") == 0 || (path[0] == '.')))
+                            printf("%s\n", path);
+                    
+}
+            
+            
      
   DIR * d = opendir(path); 
   if(d==NULL) return; 
@@ -136,15 +153,16 @@ void nameFunc(char * executavel,char * path, char * mode, char * file, char * cm
   while ((dir = readdir(d)) != NULL) 
     {
        
-        if(strcmp("-perm", mode) == 0) {
+        if(strcmp("-perm", mode) == 0 && dir -> d_type == DT_REG ) {
                     struct stat fileStat;
-                    char* dir_path = (char *)malloc(sizeof(char)*MAXCHAR);
+                    char dir_path[255]; 
                     sprintf(dir_path, "%s/%s", path, dir->d_name);
                     
                     stat(dir_path,&fileStat);
                     char * ptr;
                     int statPerm = fileStat.st_mode&0777;
             
+                    //printf("Perm: %o\n", statPerm);
                     
                     if(statPerm == strtol(file, &ptr, 8) && !(strcmp(dir->d_name,".") == 0 || strcmp(dir->d_name,"..") == 0 || (dir->d_name[0] == '.')))
                             printf("%s\n", dir_path);
