@@ -45,7 +45,7 @@ void sig_handler(int sig){
 		char res;
 
 	if(getpid()==pid_handler) {
-		write(STDOUT_FILENO, "\nAre you sure you want to terminate (Y/N)?\n", 44); 
+		write(STDOUT_FILENO, "\nAre you sure you want to terminate (Y/N)?\n", 43); 
 	}
 		
 	kill(0, SIGTSTP); //envia sinal Stop ao processo pai
