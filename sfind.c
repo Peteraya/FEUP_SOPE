@@ -15,7 +15,7 @@
 #define MAXCHAR 4096
 
 unsigned long octalValue;
-static pid_t pid; //variavel global
+static pid_t pid_handler; //variavel global
 struct sigaction oldsigaction; //declarar antes de subscribe_SIGINT
 
 
@@ -44,7 +44,7 @@ void sig_handler(int sig){
 
 		char res;
 
-	if(getpid()==pid) {
+	if(getpid()==pid_handler) {
 		write(STDOUT_FILENO, "\nAre you sure you want to terminate (Y/N)?\n", 44); 
 	}
 		
@@ -274,7 +274,7 @@ int main(int argc, char **argv)
 {
    
     subscribe_SIGINT();
-	pid=getpid()
+	pid_handler=getpid();
     
     nameFunc(argv[0],argv[1],argv[2], argv[3], argv[4],argv[5]);
     
