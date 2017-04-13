@@ -15,6 +15,8 @@
 #define MAXCHAR 4096
 
 unsigned long octalValue;
+static pid_t pid; //variavel global
+struct sigaction oldsigaction; //declarar antes de subscribe_SIGINT
 
 
 /*void sigint_handler(int signo) { 
@@ -41,8 +43,12 @@ void sig_handler(int sig){
 	if(sig == SIGINT){
 
 		char res;
-		printf("\nAre you sure you want to terminate (Y/N)?\n");
-		kill(0, SIGTSTP); //envia sinal Stop ao processo pai
+
+	if(getpid()==pid) {
+		write(STDOUT_FILENO, "\nAre you sure you want to terminate (Y/N)?\n", 44); 
+	}
+		
+	kill(0, SIGTSTP); //envia sinal Stop ao processo pai
 
 		do{
 			read(STDIN_FILENO, &res, 1);
@@ -60,9 +66,6 @@ void sig_handler(int sig){
 
 }
 
-struct sigaction oldsigaction; //declarar antes de subscribe_SIGINT
-
-//chamar esta função logo no incicio do main
 void subscribe_SIGINT(){
 
     sigaction(SIGTSTP, 0,&oldsigaction);
@@ -73,6 +76,8 @@ void subscribe_SIGINT(){
 
 	sigaction(SIGTSTP, &newsigaction,0);
 	signal(SIGINT, sig_handler);
+
+	
 }
 
 
@@ -267,18 +272,11 @@ void nameFunc(char * executavel,char * path, char * mode, char * file, char * cm
 
 int main(int argc, char **argv)
 {
-  
-   // signal(SIGINT, sigint_handler);
-
-    
-   /* if (strcmp(argv[2], "-perm") == 0) {
-      char* ptr;
-      octalValue = strtol(argv[3], &ptr, 8); 
-    }*/
    
-   subscribe_SIGINT();
+    subscribe_SIGINT();
+	pid=getpid()
     
-   nameFunc(argv[0],argv[1],argv[2], argv[3], argv[4],argv[5]);
+    nameFunc(argv[0],argv[1],argv[2], argv[3], argv[4],argv[5]);
     
   
   exit(0);
