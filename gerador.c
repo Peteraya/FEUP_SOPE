@@ -14,6 +14,9 @@
 #include <sys/file.h> 
 
 
+#define MAXL 4000
+
+
 //usar aqui mutex?
 int nr_pedidos_global_F=0;
 int nr_rejeitados_global_F=0;
@@ -24,6 +27,8 @@ int nr_rejeitados_global_M=0;
 int nr_descartados_global_M=0;
 
 
+
+//Nota: pode ser preciso usar semaforos no caso do acesso a estas variaveis globais em cima
 
 
 struct mensagem_pedido{
@@ -73,7 +78,7 @@ void* criador_pedidos(void* arg){
         
         ms_ped.tempo=luck;
         ms_ped.rejei=0;
-        char* msg;
+        char msg[MAXL];
         
         //?
         sprintf(msg, "%d - %d - %d: %c - %d - PEDIDO",i, getpid() ,ms_ped.pedido,ms_ped.gen,ms_ped.tempo);
@@ -98,7 +103,7 @@ void* rejeita_pedidos(void* arg){
     
     struct criar_pedido *pedi = (struct criar_pedido*)arg;
     int fd_registos = pedi->fd_registos;
-    char* msg;
+    char msg[MAXL];
     
     
     
@@ -146,12 +151,14 @@ void* rejeita_pedidos(void* arg){
     return NULL;
 }
 
+
+
 int main(int argc, char **argv)
 {
     
     int fd_registos,fd_entrada;
     pthread_t tid_creat, tid_reject; 
-    char* regis;
+    char regis[MAXL];
     
     
     sprintf(regis,"/tmp/ger.%d",getpid());
@@ -184,11 +191,11 @@ int main(int argc, char **argv)
     pthread_join(tid_creat, NULL);
     pthread_join(tid_reject, NULL);
     
-    char* estatistica;
-    sprintf(estatistica, "-Numero de pedidos Masculinos: %d \n -Numero de pedidos Femininos: %d \n -Numero de pedidos Total: %d \n -Numero de rejeicoes recebidas Masculinas: %d \n -Numero de rejeicoes recebidas Femininas: %d \n -Numero de rejeicoes recebidas no Total: %d \n -Numero de rejeicoes descartadas Masculinas: %d \n, -Numero de rejeicoes descartadas Femininas: %d \n -Numero de rejeicoes descartadas no Total: %d \n", nr_pedidos_global_M,nr_pedidos_global_F, (nr_pedidos_global_F+nr_pedidos_global_M), nr_rejeitados_global_M,nr_rejeitados_global_F,(nr_rejeitados_global_M+nr_rejeitados_global_F),nr_descartados_global_M,nr_descartados_global_F,(nr_descartados_global_M+nr_descartados_global_F));
+    char estatistica[MAXL];
+    sprintf(estatistica, " -Numero de pedidos Masculinos: %d \n -Numero de pedidos Femininos: %d \n -Numero de pedidos Total: %d \n -Numero de rejeicoes recebidas Masculinas: %d \n -Numero de rejeicoes recebidas Femininas: %d \n -Numero de rejeicoes recebidas no Total: %d \n -Numero de rejeicoes descartadas Masculinas: %d \n -Numero de rejeicoes descartadas Femininas: %d \n -Numero de rejeicoes descartadas no Total: %d \n", nr_pedidos_global_M,nr_pedidos_global_F, (nr_pedidos_global_F+nr_pedidos_global_M), nr_rejeitados_global_M,nr_rejeitados_global_F,(nr_rejeitados_global_M+nr_rejeitados_global_F),nr_descartados_global_M,nr_descartados_global_F,(nr_descartados_global_M+nr_descartados_global_F));
     
     write(fd_registos, estatistica, sizeof(estatistica));
-    
+ 
     
     exit(0);
 }
