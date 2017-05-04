@@ -48,11 +48,11 @@ void* entrar_sauna (void* arg){
      sem_wait(&sauna_full);
   
 
-    sleep(ms_ped->tempo);
+    sleep(ms_ped->tempo/1000);
     
-    sprintf(msg, "%d - %d - %lu - %d: %c - %d - SERVIDO",8, getpid(), pthread_self(), ms_ped->pedido,ms_ped->gen,ms_ped->tempo);
+    sprintf(msg, "%d - %d - %lu - %d: %c - %d - SERVIDO \n",8, getpid(), pthread_self(), ms_ped->pedido,ms_ped->gen,ms_ped->tempo);
     
-        write(fd_registos, msg, sizeof(msg));
+        write(fd_registos, msg, strlen(msg));
         
          if(ms_ped->gen=='F'){
             nr_servidos_global_F++;    
@@ -100,9 +100,9 @@ int main(int argc, char **argv)
        
        //falta ver generos diferentes
        
-         sprintf(msg, "%d - %d - %lu - %d: %c - %d - RECEBIDO",i, getpid(), pthread_self(), ms_ped->pedido,ms_ped->gen,ms_ped->tempo);
+         sprintf(msg, "%d - %d - %lu - %d: %c - %d - RECEBIDO \n",i, getpid(), pthread_self(), ms_ped->pedido,ms_ped->gen,ms_ped->tempo);
     
-        write(fd_registos, msg, sizeof(msg));
+        write(fd_registos, msg, strlen(msg));
         
          if(ms_ped->gen=='F'){
             nr_pedidos_global_F++;    
@@ -117,20 +117,17 @@ int main(int argc, char **argv)
    }
  
   
-    
-    
-    
-    
-    
-    
-    
-    
-    
+  
     
      char estatistica[MAXL];
-    sprintf(estatistica, " -Numero de pedidos Masculinos: %d \n -Numero de pedidos Femininos: %d \n -Numero de pedidos Total: %d \n -Numero de rejeicoes recebidas Masculinas: %d \n -Numero de rejeicoes recebidas Femininas: %d \n -Numero de rejeicoes recebidas no Total: %d \n -Numero de pedidos servidos Masculinos: %d \n -Numero de pedidos servidos Femininos: %d \n -Numero de pedidos servidos Total: %d \n", nr_pedidos_global_M,nr_pedidos_global_F, (nr_pedidos_global_F+nr_pedidos_global_M), nr_rejeitados_global_M,nr_rejeitados_global_F,(nr_rejeitados_global_M+nr_rejeitados_global_F),nr_servidos_global_M,nr_servidos_global_F,(nr_servidos_global_M+nr_servidos_global_F));
+    sprintf(estatistica, " -Numero de pedidos Masculinos: %d \n -Numero de pedidos Femininos: %d \n -Numero de pedidos Total: %d \n -Numero de rejeicoes recebidas Masculinas: %d \n -Numero de rejeicoes recebidas Femininas: %d \n -Numero de rejeicoes recebidas no Total: %d \n -Numero de pedidos servidos Masculinos: %d \n -Numero de pedidos servidos Femininos: %d \n -Numero de pedidos servidos Total: %d", nr_pedidos_global_M,nr_pedidos_global_F, (nr_pedidos_global_F+nr_pedidos_global_M), nr_rejeitados_global_M,nr_rejeitados_global_F,(nr_rejeitados_global_M+nr_rejeitados_global_F),nr_servidos_global_M,nr_servidos_global_F,(nr_servidos_global_M+nr_servidos_global_F));
     
-    write(fd_registos, estatistica, sizeof(estatistica));
+    write(fd_registos, estatistica, strlen(estatistica));
   
+
+    unlink("/tmp/rejeitados");
+    
+       exit(0);
+    
 }
 

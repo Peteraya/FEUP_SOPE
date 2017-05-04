@@ -81,8 +81,8 @@ void* criador_pedidos(void* arg){
         char msg[MAXL];
         
         //?
-        sprintf(msg, "%d - %d - %d: %c - %d - PEDIDO",i, getpid() ,ms_ped.pedido,ms_ped.gen,ms_ped.tempo);
-        write(fd_registos, msg, sizeof(msg));
+        sprintf(msg, "%d - %d - %d: %c - %d - PEDIDO \n",i, getpid() ,ms_ped.pedido,ms_ped.gen,ms_ped.tempo);
+        write(fd_registos, msg, strlen(msg));
         
         
         write(fd_entrada,&ms_ped,sizeof(struct mensagem_pedido)); 
@@ -109,8 +109,8 @@ void* rejeita_pedidos(void* arg){
     
     read(fd_rejeitados,&ms_ped,sizeof(struct mensagem_pedido)); 
     
-    sprintf(msg, "%d - %d - %d: %c - %d - REJEITADO",8, getpid() ,ms_ped.pedido,ms_ped.gen,ms_ped.tempo);
-    write(fd_registos, msg, sizeof(msg));
+    sprintf(msg, "%d - %d - %d: %c - %d - REJEITADO \n",8, getpid() ,ms_ped.pedido,ms_ped.gen,ms_ped.tempo);
+    write(fd_registos, msg, strlen(msg));
     
      if(ms_ped.gen=='F'){
             nr_rejeitados_global_F++;    
@@ -133,8 +133,8 @@ void* rejeita_pedidos(void* arg){
             nr_pedidos_global_M++;
         }
         
-        sprintf(msg, "%d - %d - %d: %c - %d - PEDIDO",8, getpid() ,ms_ped.pedido,ms_ped.gen,ms_ped.tempo);
-        write(fd_registos, msg, sizeof(msg));
+        sprintf(msg, "%d - %d - %d: %c - %d - PEDIDO \n",8, getpid() ,ms_ped.pedido,ms_ped.gen,ms_ped.tempo);
+        write(fd_registos, msg, strlen(msg));
         write(fd_entrada,&ms_ped,sizeof(struct mensagem_pedido)); 
     }
     else{
@@ -145,8 +145,8 @@ void* rejeita_pedidos(void* arg){
         else{
            nr_descartados_global_M++;
         }
-        sprintf(msg, "%d - %d - %d: %c - %d - DESCARTADO",8, getpid() ,ms_ped.pedido,ms_ped.gen,ms_ped.tempo);
-        write(fd_registos, msg, sizeof(msg));
+        sprintf(msg, "%d - %d - %d: %c - %d - DESCARTADO \n",8, getpid() ,ms_ped.pedido,ms_ped.gen,ms_ped.tempo);
+        write(fd_registos, msg, strlen(msg));
     }
     return NULL;
 }
@@ -192,11 +192,11 @@ int main(int argc, char **argv)
     pthread_join(tid_reject, NULL);
     
     char estatistica[MAXL];
-    sprintf(estatistica, " -Numero de pedidos Masculinos: %d \n -Numero de pedidos Femininos: %d \n -Numero de pedidos Total: %d \n -Numero de rejeicoes recebidas Masculinas: %d \n -Numero de rejeicoes recebidas Femininas: %d \n -Numero de rejeicoes recebidas no Total: %d \n -Numero de rejeicoes descartadas Masculinas: %d \n -Numero de rejeicoes descartadas Femininas: %d \n -Numero de rejeicoes descartadas no Total: %d \n", nr_pedidos_global_M,nr_pedidos_global_F, (nr_pedidos_global_F+nr_pedidos_global_M), nr_rejeitados_global_M,nr_rejeitados_global_F,(nr_rejeitados_global_M+nr_rejeitados_global_F),nr_descartados_global_M,nr_descartados_global_F,(nr_descartados_global_M+nr_descartados_global_F));
+    sprintf(estatistica, " -Numero de pedidos Masculinos: %d \n -Numero de pedidos Femininos: %d \n -Numero de pedidos Total: %d \n -Numero de rejeicoes recebidas Masculinas: %d \n -Numero de rejeicoes recebidas Femininas: %d \n -Numero de rejeicoes recebidas no Total: %d \n -Numero de rejeicoes descartadas Masculinas: %d \n -Numero de rejeicoes descartadas Femininas: %d \n -Numero de rejeicoes descartadas no Total: %d", nr_pedidos_global_M,nr_pedidos_global_F, (nr_pedidos_global_F+nr_pedidos_global_M), nr_rejeitados_global_M,nr_rejeitados_global_F,(nr_rejeitados_global_M+nr_rejeitados_global_F),nr_descartados_global_M,nr_descartados_global_F,(nr_descartados_global_M+nr_descartados_global_F));
     
-    write(fd_registos, estatistica, sizeof(estatistica));
+    write(fd_registos, estatistica, strlen(estatistica));
  
-    
+    unlink("/tmp/entrada");
     exit(0);
 }
 
