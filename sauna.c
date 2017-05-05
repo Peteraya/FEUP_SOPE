@@ -41,29 +41,35 @@ struct mensagem_pedido{
 void* entrar_sauna (void* arg){
     
 
-   char msg[MAXL];
+	char msg[MAXL];
     struct mensagem_pedido *ms_ped = (struct mensagem_pedido*)arg;
 
      
-     sem_wait(&sauna_full);
+    if(sem_wait(&sauna_full)){
+		perror("sem_wait_error");
+		exit(1); 
+	}
   
 
     sleep(ms_ped->tempo/1000);
     
     sprintf(msg, "%d - %d - %lu - %d: %c - %d - SERVIDO \n",8, getpid(), pthread_self(), ms_ped->pedido,ms_ped->gen,ms_ped->tempo);
     
-        write(fd_registos, msg, strlen(msg));
-        
-         if(ms_ped->gen=='F'){
-            nr_servidos_global_F++;    
-        }
-        else{
-            nr_servidos_global_M++;
-        }
     
-    sem_post(&sauna_full);
+    write(fd_registos, msg, strlen(msg));
+
+    if(ms_ped->gen=='F'){
+        nr_servidos_global_F++;    
+    }
+    else{
+        nr_servidos_global_M++;
+    }
     
-    
+    if(sem_post(&sauna_full)){
+		perror("sem_post_error");
+		exit(1); 
+	}
+	
     return NULL;
 }
 
@@ -71,7 +77,10 @@ void* entrar_sauna (void* arg){
 int main(int argc, char **argv)
 {
     
-    sem_init(&sauna_full, 0, atoi(argv[1])); 
+    if(sem_init(&sauna_full, 0, atoi(argv[1]))){
+		perror("sem_init_error");
+		exit(1); 
+	}
     
     
     if (mkfifo("/tmp/rejeitados",0660)<0){ 
@@ -82,44 +91,47 @@ int main(int argc, char **argv)
     }
         
 
-  int fd_entrada, i=0;
-  pthread_t tid[MAXL];
+	int fd_entrada, i=0;
+	pthread_t tid[MAXL];
   
-  char regis[MAXL], msg[MAXL];
+	char regis[MAXL], msg[MAXL];
     
-    sprintf(regis,"/tmp/bal.%d",getpid());
+	sprintf(regis,"/tmp/bal.%d",getpid());
 
- fd_entrada = open("/tmp/entrada",O_RDONLY);
- fd_registos = open(regis, O_WRONLY | O_CREAT | O_EXCL, 0644);
+	fd_entrada = open("/tmp/entrada",O_RDONLY);
+    fd_registos = open(regis, O_WRONLY | O_CREAT | O_EXCL, 0644);
     
     struct mensagem_pedido *ms_ped;
     
     ms_ped = malloc(sizeof(struct mensagem_pedido));
  
-   while(read(fd_entrada,ms_ped,sizeof(struct mensagem_pedido))){
+	while(read(fd_entrada,ms_ped,sizeof(struct mensagem_pedido))){
        
        //falta ver generos diferentes
        
-         sprintf(msg, "%d - %d - %lu - %d: %c - %d - RECEBIDO \n",i, getpid(), pthread_self(), ms_ped->pedido,ms_ped->gen,ms_ped->tempo);
+        sprintf(msg, "%d - %d - %lu - %d: %c - %d - RECEBIDO \n",i, getpid(), pthread_self(), ms_ped->pedido,ms_ped->gen,ms_ped->tempo);
     
         write(fd_registos, msg, strlen(msg));
         
-         if(ms_ped->gen=='F'){
+        if(ms_ped->gen=='F'){
             nr_pedidos_global_F++;    
         }
         else{
             nr_pedidos_global_M++;
         }
        
-       pthread_create(&tid[i], NULL, entrar_sauna, (void *)ms_ped);
+        if(pthread_create(&tid[i], NULL, entrar_sauna, (void *)ms_ped)){
+			perror("pthread_create_error");
+			exit(1); 
+		}
        
-       i++;
+		i++;
    }
  
   
   
     
-     char estatistica[MAXL];
+    char estatistica[MAXL];
     sprintf(estatistica, " -Numero de pedidos Masculinos: %d \n -Numero de pedidos Femininos: %d \n -Numero de pedidos Total: %d \n -Numero de rejeicoes recebidas Masculinas: %d \n -Numero de rejeicoes recebidas Femininas: %d \n -Numero de rejeicoes recebidas no Total: %d \n -Numero de pedidos servidos Masculinos: %d \n -Numero de pedidos servidos Femininos: %d \n -Numero de pedidos servidos Total: %d", nr_pedidos_global_M,nr_pedidos_global_F, (nr_pedidos_global_F+nr_pedidos_global_M), nr_rejeitados_global_M,nr_rejeitados_global_F,(nr_rejeitados_global_M+nr_rejeitados_global_F),nr_servidos_global_M,nr_servidos_global_F,(nr_servidos_global_M+nr_servidos_global_F));
     
     write(fd_registos, estatistica, strlen(estatistica));
@@ -127,7 +139,7 @@ int main(int argc, char **argv)
 
     unlink("/tmp/rejeitados");
     
-       exit(0);
+    exit(0);
     
 }
 
