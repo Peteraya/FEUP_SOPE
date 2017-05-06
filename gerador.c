@@ -12,10 +12,12 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <sys/file.h> 
-
+#include <sys/time.h>
 
 #define MAXL 4000
 
+struct timeval before, after;
+unsigned long long millisecondsBefore;
 
 //usar aqui mutex?
 int nr_pedidos_global_F=0;
@@ -81,7 +83,11 @@ void* criador_pedidos(void* arg){
         char msg[MAXL];
         
         //?
-        sprintf(msg, "%d - %d - %d: %c - %d - PEDIDO \n",i, getpid() ,ms_ped.pedido,ms_ped.gen,ms_ped.tempo);
+        
+        gettimeofday(&after,NULL);
+        unsigned long long millisecondsAfter = 1000000 * (unsigned long long)(after.tv_sec) + (unsigned long long)(after.tv_usec);
+    
+        sprintf(msg, "%.2f - %d - %d: %c - %d - PEDIDO \n",(millisecondsAfter-millisecondsBefore)/1000.0, getpid() ,ms_ped.pedido,ms_ped.gen,ms_ped.tempo);
         write(fd_registos, msg, strlen(msg));
         
         
@@ -105,11 +111,12 @@ void* rejeita_pedidos(void* arg){
     int fd_registos = pedi->fd_registos;
     char msg[MAXL];
     
-    
+    gettimeofday(&after,NULL);
+    unsigned long long millisecondsAfter = 1000000 * (unsigned long long)(after.tv_sec) + (unsigned long long)(after.tv_usec);
     
     read(fd_rejeitados,&ms_ped,sizeof(struct mensagem_pedido)); 
     
-    sprintf(msg, "%d - %d - %d: %c - %d - REJEITADO \n",8, getpid() ,ms_ped.pedido,ms_ped.gen,ms_ped.tempo);
+    sprintf(msg, "%.2f - %d - %d: %c - %d - REJEITADO \n",(millisecondsAfter-millisecondsBefore)/1000.0, getpid() ,ms_ped.pedido,ms_ped.gen,ms_ped.tempo);
     write(fd_registos, msg, strlen(msg));
     
      if(ms_ped.gen=='F'){
@@ -119,6 +126,8 @@ void* rejeita_pedidos(void* arg){
             nr_rejeitados_global_M++;
         }
     
+    gettimeofday(&after,NULL);
+    millisecondsAfter = 1000000 * (unsigned long long)(after.tv_sec) + (unsigned long long)(after.tv_usec);
     
     
     if(ms_ped.rejei<3){
@@ -133,7 +142,7 @@ void* rejeita_pedidos(void* arg){
             nr_pedidos_global_M++;
         }
         
-        sprintf(msg, "%d - %d - %d: %c - %d - PEDIDO \n",8, getpid() ,ms_ped.pedido,ms_ped.gen,ms_ped.tempo);
+        sprintf(msg, "%.2f - %d - %d: %c - %d - PEDIDO \n",(millisecondsAfter-millisecondsBefore)/1000.0, getpid() ,ms_ped.pedido,ms_ped.gen,ms_ped.tempo);
         write(fd_registos, msg, strlen(msg));
         write(fd_entrada,&ms_ped,sizeof(struct mensagem_pedido)); 
     }
@@ -145,7 +154,7 @@ void* rejeita_pedidos(void* arg){
         else{
            nr_descartados_global_M++;
         }
-        sprintf(msg, "%d - %d - %d: %c - %d - DESCARTADO \n",8, getpid() ,ms_ped.pedido,ms_ped.gen,ms_ped.tempo);
+        sprintf(msg, "%.2f - %d - %d: %c - %d - DESCARTADO \n",(millisecondsAfter-millisecondsBefore)/1000.0, getpid() ,ms_ped.pedido,ms_ped.gen,ms_ped.tempo);
         write(fd_registos, msg, strlen(msg));
     }
     return NULL;
@@ -155,6 +164,9 @@ void* rejeita_pedidos(void* arg){
 
 int main(int argc, char **argv)
 {
+    
+    gettimeofday(&before,NULL);
+    millisecondsBefore = 1000000 * (unsigned long long)(before.tv_sec) + (unsigned long long)(before.tv_usec);
     
     int fd_registos,fd_entrada;
     pthread_t tid_creat, tid_reject; 

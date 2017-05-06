@@ -12,10 +12,16 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <sys/file.h> 
+#include <sys/time.h>
 
 #define MAXL 4000
 
 //Generos diferentes sem mutex?
+
+struct timeval before, after;
+unsigned long long millisecondsBefore;
+
+
 
 sem_t sauna_full;
 
@@ -53,7 +59,11 @@ void* entrar_sauna (void* arg){
 
     sleep(ms_ped->tempo/1000);
     
-    sprintf(msg, "%d - %d - %lu - %d: %c - %d - SERVIDO \n",8, getpid(), pthread_self(), ms_ped->pedido,ms_ped->gen,ms_ped->tempo);
+    gettimeofday(&after,NULL);
+    unsigned long long millisecondsAfter = 1000000 * (unsigned long long)(after.tv_sec) + (unsigned long long)(after.tv_usec);
+
+    
+    sprintf(msg, "%.2f - %d - %lu - %d: %c - %d - SERVIDO \n",(millisecondsAfter-millisecondsBefore)/1000.0, getpid(), pthread_self(), ms_ped->pedido,ms_ped->gen,ms_ped->tempo);
     
     
     write(fd_registos, msg, strlen(msg));
@@ -76,6 +86,10 @@ void* entrar_sauna (void* arg){
 
 int main(int argc, char **argv)
 {
+    
+    gettimeofday(&before, NULL);
+    millisecondsBefore = 1000000 * (unsigned long long)(before.tv_sec) + (unsigned long long)(before.tv_usec);
+
     
     if(sem_init(&sauna_full, 0, atoi(argv[1]))){
 		perror("sem_init_error");
@@ -108,8 +122,11 @@ int main(int argc, char **argv)
 	while(read(fd_entrada,ms_ped,sizeof(struct mensagem_pedido))){
        
        //falta ver generos diferentes
-       
-        sprintf(msg, "%d - %d - %lu - %d: %c - %d - RECEBIDO \n",i, getpid(), pthread_self(), ms_ped->pedido,ms_ped->gen,ms_ped->tempo);
+
+        gettimeofday(&after,NULL);
+     unsigned long long millisecondsAfter = 1000000 * (unsigned long long)(after.tv_sec) + (unsigned long long)(after.tv_usec);
+            
+        sprintf(msg, "%.2f - %d - %lu - %d: %c - %d - RECEBIDO \n",(millisecondsAfter-millisecondsBefore)/1000.0, getpid(), pthread_self(), ms_ped->pedido,ms_ped->gen,ms_ped->tempo);
     
         write(fd_registos, msg, strlen(msg));
         
