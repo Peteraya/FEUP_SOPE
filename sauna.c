@@ -128,7 +128,12 @@ int main(int argc, char **argv)
 		i++;
    }
  
-  
+	for (int j=0;j<i;j++){
+		if(pthread_join(tid[i],NULL)){
+			perror("pthread_join_error");
+			exit(1); 
+		}
+	}
   
     
     char estatistica[MAXL];
