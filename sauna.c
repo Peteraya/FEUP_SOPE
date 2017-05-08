@@ -116,8 +116,6 @@ int main(int argc, char **argv)
     fd_registos = open(regis, O_WRONLY | O_CREAT | O_EXCL, 0644);
     
     struct mensagem_pedido ms_ped[MAXL];
-    
-    ms_ped = malloc(sizeof(struct mensagem_pedido));
  
 	while(read(fd_entrada,&ms_ped[i],sizeof(struct mensagem_pedido))){
        
