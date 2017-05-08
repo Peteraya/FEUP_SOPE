@@ -115,11 +115,11 @@ int main(int argc, char **argv)
 	fd_entrada = open("/tmp/entrada",O_RDONLY);
     fd_registos = open(regis, O_WRONLY | O_CREAT | O_EXCL, 0644);
     
-    struct mensagem_pedido *ms_ped;
+    struct mensagem_pedido ms_ped[MAXL];
     
     ms_ped = malloc(sizeof(struct mensagem_pedido));
  
-	while(read(fd_entrada,ms_ped,sizeof(struct mensagem_pedido))){
+	while(read(fd_entrada,&ms_ped[i],sizeof(struct mensagem_pedido))){
        
        //falta ver generos diferentes
 
@@ -130,14 +130,14 @@ int main(int argc, char **argv)
     
         write(fd_registos, msg, strlen(msg));
         
-        if(ms_ped->gen=='F'){
+        if(ms_ped[i].gen=='F'){
             nr_pedidos_global_F++;    
         }
         else{
             nr_pedidos_global_M++;
         }
        
-        if(pthread_create(&tid[i], NULL, entrar_sauna, (void *)ms_ped)){
+        if(pthread_create(&tid[i], NULL, entrar_sauna, (void *) &ms_ped[i])){
 			perror("pthread_create_error");
 			exit(1); 
 		}
@@ -146,10 +146,7 @@ int main(int argc, char **argv)
    }
  
 	for (int j=0;j<i;j++){
-		if(pthread_join(tid[i],NULL)){
-			perror("pthread_join_error");
-			exit(1); 
-		}
+		pthread_join(tid[i],NULL);
 	}
   
     
