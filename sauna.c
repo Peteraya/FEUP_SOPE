@@ -34,129 +34,173 @@ int nr_servidos_global_F=0;
 int nr_pedidos_global_M=0;
 int nr_rejeitados_global_M=0;
 int nr_servidos_global_M=0;
-
+char current_gen;
 
 struct mensagem_pedido{
-    int pedido;
-    char gen;
-    int tempo;
-    int rejei;
+	int pedido;
+	char gen;
+	int tempo;
+	int rejei;
 };
 
 
 void* entrar_sauna (void* arg){
-    
+
 
 	char msg[MAXL];
-    struct mensagem_pedido *ms_ped = (struct mensagem_pedido*)arg;
+	struct mensagem_pedido *ms_ped = (struct mensagem_pedido*)arg;
 
-     
-    if(sem_wait(&sauna_full)){
-		perror("sem_wait_error");
-		exit(1); 
-	}
-  
+	sleep(ms_ped->tempo/1000);
 
-    sleep(ms_ped->tempo/1000);
-    
-    gettimeofday(&after,NULL);
-    unsigned long long millisecondsAfter = 1000000 * (unsigned long long)(after.tv_sec) + (unsigned long long)(after.tv_usec);
+	gettimeofday(&after,NULL);
+	unsigned long long millisecondsAfter = 1000000 * (unsigned long long)(after.tv_sec) + (unsigned long long)(after.tv_usec);
 
-    
-    sprintf(msg, "%.2f - %d - %lu - %d: %c - %d - SERVIDO \n",(millisecondsAfter-millisecondsBefore)/1000.0, getpid(), pthread_self(), ms_ped->pedido,ms_ped->gen,ms_ped->tempo);
-    
-    
-    write(fd_registos, msg, strlen(msg));
 
-    if(ms_ped->gen=='F'){
-        nr_servidos_global_F++;    
-    }
-    else{
-        nr_servidos_global_M++;
-    }
-    
-    if(sem_post(&sauna_full)){
+	sprintf(msg, "%.2f - %d - %lu - %d: %c - %d - SERVIDO \n",(millisecondsAfter-millisecondsBefore)/1000.0, getpid(), pthread_self(), ms_ped->pedido,ms_ped->gen,ms_ped->tempo);
+
+
+	write(fd_registos, msg, strlen(msg));
+
+	if(sem_post(&sauna_full)){
 		perror("sem_post_error");
 		exit(1); 
 	}
-	
-    return NULL;
+
+	return NULL;
 }
 
 
 int main(int argc, char **argv)
 {
-    
-    gettimeofday(&before, NULL);
-    millisecondsBefore = 1000000 * (unsigned long long)(before.tv_sec) + (unsigned long long)(before.tv_usec);
 
-    
-    if(sem_init(&sauna_full, 0, atoi(argv[1]))){
+	gettimeofday(&before, NULL);
+	millisecondsBefore = 1000000 * (unsigned long long)(before.tv_sec) + (unsigned long long)(before.tv_usec);
+
+
+	if(sem_init(&sauna_full, 0, atoi(argv[1]))){
 		perror("sem_init_error");
 		exit(1); 
 	}
-    
-    
-    if (mkfifo("/tmp/rejeitados",0660)<0){ 
-        if (errno==EEXIST) 
-            printf("FIFO '/tmp/rejeitados' already exists\n"); 
-        else
-            printf("Can't create FIFO\n"); 
-    }
-        
 
-	int fd_entrada, i=0;
+
+	if (mkfifo("/tmp/rejeitados",0660)<0){ 
+		if (errno==EEXIST) 
+			printf("FIFO '/tmp/rejeitados' already exists\n"); 
+		else
+			printf("Can't create FIFO\n"); 
+	}
+
+
+	int fd_entrada, fd_rejeitados, ms_ped_counter=0, thread_counter=0;
 	pthread_t tid[MAXL];
-  
+
 	char regis[MAXL], msg[MAXL];
-    
+
 	sprintf(regis,"/tmp/bal.%d",getpid());
 
 	fd_entrada = open("/tmp/entrada",O_RDONLY);
-    fd_registos = open(regis, O_WRONLY | O_CREAT | O_EXCL, 0644);
-    
-    struct mensagem_pedido ms_ped[MAXL];
- 
-	while(read(fd_entrada,&ms_ped[i],sizeof(struct mensagem_pedido))){
-       
-       //falta ver generos diferentes
+	fd_rejeitados= open("/tmp/rejeitados",O_WRONLY);
+	fd_registos = open(regis, O_WRONLY | O_CREAT | O_EXCL, 0644);
 
-        gettimeofday(&after,NULL);
-     unsigned long long millisecondsAfter = 1000000 * (unsigned long long)(after.tv_sec) + (unsigned long long)(after.tv_usec);
-            
-        sprintf(msg, "%.2f - %d - %lu - %d: %c - %d - RECEBIDO \n",(millisecondsAfter-millisecondsBefore)/1000.0, getpid(), pthread_self(), ms_ped->pedido,ms_ped->gen,ms_ped->tempo);
-    
-        write(fd_registos, msg, strlen(msg));
-        
-        if(ms_ped[i].gen=='F'){
-            nr_pedidos_global_F++;    
-        }
-        else{
-            nr_pedidos_global_M++;
-        }
-       
-        if(pthread_create(&tid[i], NULL, entrar_sauna, (void *) &ms_ped[i])){
-			perror("pthread_create_error");
+	struct mensagem_pedido ms_ped[MAXL];
+
+	while(read(fd_entrada,&ms_ped[ms_ped_counter],sizeof(struct mensagem_pedido))){
+
+		//falta ver generos diferentes
+
+		gettimeofday(&after,NULL);
+		unsigned long long millisecondsAfter = 1000000 * (unsigned long long)(after.tv_sec) + (unsigned long long)(after.tv_usec);
+
+		sprintf(msg, "%.2f - %d - %lu - %d: %c - %d - RECEBIDO \n",(millisecondsAfter-millisecondsBefore)/1000.0, getpid(), pthread_self(), ms_ped[ms_ped_counter].pedido,ms_ped[ms_ped_counter].gen,ms_ped[ms_ped_counter].tempo);
+
+		write(fd_registos, msg, strlen(msg));
+
+		if(ms_ped[ms_ped_counter].gen=='F'){
+			nr_pedidos_global_F++;    
+		}
+		else{
+			nr_pedidos_global_M++;
+		}
+
+		int val;
+
+		if(sem_getvalue(&sauna_full,&val)){
+			perror("sem_getvalue_error");
 			exit(1); 
 		}
-       
-		i++;
-   }
- 
-	for (int j=0;j<i;j++){
-		pthread_join(tid[i],NULL);
-	}
-  
-    
-    char estatistica[MAXL];
-    sprintf(estatistica, " -Numero de pedidos Masculinos: %d \n -Numero de pedidos Femininos: %d \n -Numero de pedidos Total: %d \n -Numero de rejeicoes recebidas Masculinas: %d \n -Numero de rejeicoes recebidas Femininas: %d \n -Numero de rejeicoes recebidas no Total: %d \n -Numero de pedidos servidos Masculinos: %d \n -Numero de pedidos servidos Femininos: %d \n -Numero de pedidos servidos Total: %d", nr_pedidos_global_M,nr_pedidos_global_F, (nr_pedidos_global_F+nr_pedidos_global_M), nr_rejeitados_global_M,nr_rejeitados_global_F,(nr_rejeitados_global_M+nr_rejeitados_global_F),nr_servidos_global_M,nr_servidos_global_F,(nr_servidos_global_M+nr_servidos_global_F));
-    
-    write(fd_registos, estatistica, strlen(estatistica));
-  
 
-    unlink("/tmp/rejeitados");
-    
-    exit(0);
-    
+		if(val==10){
+			current_gen=ms_ped[ms_ped_counter].gen;
+
+			if(sem_wait(&sauna_full)){
+				perror("sem_wait_error");
+				exit(1); 
+			}
+
+			if(pthread_create(&tid[thread_counter], NULL, entrar_sauna, (void *) &ms_ped[ms_ped_counter])){
+				perror("pthread_create_error");
+				exit(1); 
+			}
+
+			if(ms_ped[ms_ped_counter].gen=='F'){
+				nr_servidos_global_F++;    
+			}
+			else{
+				nr_servidos_global_M++;
+			}
+			thread_counter++;		
+		}
+		else {
+			if(ms_ped[ms_ped_counter].gen==current_gen){
+
+				if(sem_wait(&sauna_full)){
+					perror("sem_wait_error");
+					exit(1); 
+				}
+
+				if(pthread_create(&tid[thread_counter], NULL, entrar_sauna, (void *) &ms_ped[ms_ped_counter])){
+					perror("pthread_create_error");
+					exit(1); 
+				}
+
+				if(ms_ped[ms_ped_counter].gen=='F'){
+					nr_servidos_global_F++;    
+				}
+				else{
+					nr_servidos_global_M++;
+				}
+				thread_counter++;
+			}
+			else{
+				if(ms_ped[ms_ped_counter].gen=='F'){
+					nr_rejeitados_global_F++;    
+				}
+				else{
+					nr_rejeitados_global_M++;
+				}
+				ms_ped[ms_ped_counter].rejei+=1;
+				write(fd_rejeitados,&ms_ped[ms_ped_counter],sizeof(struct mensagem_pedido));
+
+			}
+		}
+		ms_ped_counter++;
+	}
+
+	for (int j=0;j<=thread_counter;j++){
+		pthread_join(tid[j],NULL);
+
+	}
+
+
+	char estatistica[MAXL];
+	sprintf(estatistica, " -Numero de pedidos Masculinos: %d \n -Numero de pedidos Femininos: %d \n -Numero de pedidos Total: %d \n -Numero de rejeicoes recebidas Masculinas: %d \n -Numero de rejeicoes recebidas Femininas: %d \n -Numero de rejeicoes recebidas no Total: %d \n -Numero de pedidos servidos Masculinos: %d \n -Numero de pedidos servidos Femininos: %d \n -Numero de pedidos servidos Total: %d\n", nr_pedidos_global_M,nr_pedidos_global_F, (nr_pedidos_global_F+nr_pedidos_global_M), nr_rejeitados_global_M,nr_rejeitados_global_F,(nr_rejeitados_global_M+nr_rejeitados_global_F),nr_servidos_global_M,nr_servidos_global_F,(nr_servidos_global_M+nr_servidos_global_F));
+
+	write(fd_registos, estatistica, strlen(estatistica));
+
+
+	unlink("/tmp/rejeitados");
+
+	pthread_exit(0);
+
 }
 
