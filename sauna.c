@@ -83,12 +83,12 @@ int main(int argc, char **argv)
 	}
 
 
-	if (mkfifo("/tmp/rejeitados",0660)<0){ 
+	/*if (mkfifo("/tmp/rejeitados",0660)<0){ 
 		if (errno==EEXIST) 
 			printf("FIFO '/tmp/rejeitados' already exists\n"); 
 		else
 			printf("Can't create FIFO\n"); 
-	}
+	}*/
 
 
 	int fd_entrada, fd_rejeitados, ms_ped_counter=0, thread_counter=0;
@@ -99,7 +99,7 @@ int main(int argc, char **argv)
 	sprintf(regis,"/tmp/bal.%d",getpid());
 
 	fd_entrada = open("/tmp/entrada",O_RDONLY);
-	fd_rejeitados= open("/tmp/rejeitados",O_WRONLY);
+	//fd_rejeitados= open("/tmp/rejeitados",O_WRONLY);
 	fd_registos = open(regis, O_WRONLY | O_CREAT | O_EXCL, 0644);
 
 	struct mensagem_pedido ms_ped[MAXL];
@@ -129,7 +129,7 @@ int main(int argc, char **argv)
 			exit(1); 
 		}
 
-		if(val==10){
+		if(val==atoi(argv[1])){
 			current_gen=ms_ped[ms_ped_counter].gen;
 
 			if(sem_wait(&sauna_full)){
@@ -179,7 +179,7 @@ int main(int argc, char **argv)
 					nr_rejeitados_global_M++;
 				}
 				ms_ped[ms_ped_counter].rejei+=1;
-				write(fd_rejeitados,&ms_ped[ms_ped_counter],sizeof(struct mensagem_pedido));
+				//write(fd_rejeitados,&ms_ped[ms_ped_counter],sizeof(struct mensagem_pedido));
 
 			}
 		}
@@ -198,9 +198,9 @@ int main(int argc, char **argv)
 	write(fd_registos, estatistica, strlen(estatistica));
 
 
-	unlink("/tmp/rejeitados");
+	//unlink("/tmp/rejeitados");
 
-	pthread_exit(0);
+	exit(0);
 
 }
 
