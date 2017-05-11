@@ -13,13 +13,13 @@
 #include <errno.h>
 #include <sys/file.h> 
 #include <sys/time.h>
+#include <time.h>
 
 #define MAXL 4000
 
 struct timeval before, after;
 unsigned long long millisecondsBefore;
 
-//usar aqui mutex?
 int nr_pedidos_global_F=0;
 int nr_rejeitados_global_F=0;
 int nr_descartados_global_F=0;
@@ -27,10 +27,6 @@ int nr_descartados_global_F=0;
 int nr_pedidos_global_M=0;
 int nr_rejeitados_global_M=0;
 int nr_descartados_global_M=0;
-
-
-
-//Nota: pode ser preciso usar semaforos no caso do acesso a estas variaveis globais em cima
 
 
 struct mensagem_pedido{
@@ -44,6 +40,7 @@ struct criar_pedido{
     int nr_pedidos;
     int tempo;
     int fd_registos;
+    int fd_entrada;
 };
 
 
@@ -51,13 +48,11 @@ struct criar_pedido{
 void* criador_pedidos(void* arg){
     
     struct criar_pedido *pedi = (struct criar_pedido*)arg;
-    int nr_pedidos = pedi->nr_pedidos, max_uti = pedi->tempo, fd_entrada, fd_registos=pedi->fd_registos;
+    int nr_pedidos = pedi->nr_pedidos, max_uti = pedi->tempo, fd_entrada=pedi->fd_entrada, fd_registos=pedi->fd_registos;
     
     struct mensagem_pedido ms_ped;
-    
-    
-    fd_entrada=open("/tmp/entrada",O_WRONLY);
-    
+    time_t t;
+    srand((unsigned) time(&t));
     for(int i=0; i< nr_pedidos; i++){
         
         int luck=rand()%2;
@@ -79,7 +74,6 @@ void* criador_pedidos(void* arg){
         ms_ped.rejei=0;
         char msg[MAXL];
         
-        //?
         
         gettimeofday(&after,NULL);
         unsigned long long millisecondsAfter = 1000000 * (unsigned long long)(after.tv_sec) + (unsigned long long)(after.tv_usec);
@@ -106,6 +100,7 @@ void* rejeita_pedidos(void* arg){
     
     struct criar_pedido *pedi = (struct criar_pedido*)arg;
     int fd_registos = pedi->fd_registos;
+    int fd_entrada=pedi->fd_entrada;
     char msg[MAXL];
     
     gettimeofday(&after,NULL);
@@ -116,22 +111,18 @@ void* rejeita_pedidos(void* arg){
     sprintf(msg, "%.2f - %d - %d: %c - %d - REJEITADO \n",(millisecondsAfter-millisecondsBefore)/1000.0, getpid() ,ms_ped.pedido,ms_ped.gen,ms_ped.tempo);
     write(fd_registos, msg, strlen(msg));
     
-     if(ms_ped.gen=='F'){
+    if(ms_ped.gen=='F'){
             nr_rejeitados_global_F++;    
-        }
-        else{
+    }
+    else{
             nr_rejeitados_global_M++;
-        }
+    }
     
     gettimeofday(&after,NULL);
     millisecondsAfter = 1000000 * (unsigned long long)(after.tv_sec) + (unsigned long long)(after.tv_usec);
     
     
-    if(ms_ped.rejei<3){
-        int fd_entrada=*(int*)arg; 
-        ms_ped.rejei++;  //fazer aqui?
-        
-        
+    if(ms_ped.rejei<3){      
         if(ms_ped.gen=='F'){
             nr_pedidos_global_F++;    
         }
@@ -164,25 +155,9 @@ int main(int argc, char **argv)
     
     gettimeofday(&before,NULL);
     millisecondsBefore = 1000000 * (unsigned long long)(before.tv_sec) + (unsigned long long)(before.tv_usec);
-    
-    int fd_registos;
     pthread_t tid_creat, tid_reject; 
     char regis[MAXL];
-    
-    
-    sprintf(regis,"/tmp/ger.%d",getpid());
-    
-    struct criar_pedido *ped;
-    
-    fd_registos = open(regis, O_WRONLY | O_CREAT | O_EXCL, 0755);
-    
-    
-    ped = malloc(sizeof(struct criar_pedido));
-    (*ped).nr_pedidos = atoi(argv[1]);
-    (*ped).tempo=atoi(argv[2]);
-    (*ped).fd_registos = fd_registos;
-    
-    
+      
     if (mkfifo("/tmp/entrada",0666)<0){ 
         if (errno==EEXIST) 
             printf("FIFO '/tmp/entrada' already exists\n"); 
@@ -196,7 +171,20 @@ int main(int argc, char **argv)
 		else
 			printf("Can't create FIFO\n"); 
 	}
+   
+    sprintf(regis,"/tmp/ger.%d",getpid());
     
+    struct criar_pedido *ped;
+    
+    int fd_registos = open(regis, O_WRONLY | O_CREAT | O_EXCL, 0755);
+    int fd_entrada=open("/tmp/entrada",O_WRONLY);
+    
+
+    ped = malloc(sizeof(struct criar_pedido));
+    (*ped).nr_pedidos = atoi(argv[1]);
+    (*ped).tempo=atoi(argv[2]);
+    (*ped).fd_registos = fd_registos;
+    (*ped).fd_entrada = fd_entrada;
     
     pthread_create(&tid_creat, NULL, criador_pedidos, (void*)ped);
     
@@ -211,6 +199,6 @@ int main(int argc, char **argv)
     write(fd_registos, estatistica, strlen(estatistica));
  
     unlink("/tmp/entrada");
-	unlink("/tmp/rejeitados");
+    unlink("/tmp/rejeitados");
     exit(0);
 }

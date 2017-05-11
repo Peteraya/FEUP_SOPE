@@ -16,7 +16,7 @@
 
 #define MAXL 4000
 
-//Generos diferentes sem mutex?
+
 
 struct timeval before, after;
 unsigned long long millisecondsBefore;
@@ -46,7 +46,7 @@ struct mensagem_pedido{
 
 void* entrar_sauna (void* arg){
 
-        char msg[MAXL];
+    char msg[MAXL];
 	struct mensagem_pedido *ms_ped = (struct mensagem_pedido*)arg;
 
 	sleep(ms_ped->tempo/1000);
@@ -54,11 +54,11 @@ void* entrar_sauna (void* arg){
 	gettimeofday(&after,NULL);
 	unsigned long long millisecondsAfter = 1000000 * (unsigned long long)(after.tv_sec) + (unsigned long long)(after.tv_usec);
         
-        sprintf(msg, "%.2f - %d - %lu - %d: %c - %d - SERVIDO \n",(millisecondsAfter-millisecondsBefore)/1000.0, getpid(), pthread_self(), ms_ped->pedido,ms_ped->gen,ms_ped->tempo);
+    sprintf(msg, "%.2f - %d - %lu - %d: %c - %d - SERVIDO \n",(millisecondsAfter-millisecondsBefore)/1000.0, getpid(), pthread_self(), ms_ped->pedido,ms_ped->gen,ms_ped->tempo);
         
 	write(fd_registos, msg, strlen(msg));
         
-        if(sem_post(&sauna_full)){
+    if(sem_post(&sauna_full)){
 		perror("sem_post_error");
 		exit(1); 
 	}
@@ -98,17 +98,12 @@ int main(int argc, char **argv)
 
 	while(read(fd_entrada,&ms_ped[ms_ped_counter],sizeof(struct mensagem_pedido))){
 
-		//falta ver generos diferentes
-
 		gettimeofday(&after,NULL);
 		unsigned long long millisecondsAfter = 1000000 * (unsigned long long)(after.tv_sec) + (unsigned long long)(after.tv_usec);
 
 		sprintf(msg, "%.2f - %d - %lu - %d: %c - %d - RECEBIDO \n",(millisecondsAfter-millisecondsBefore)/1000.0, getpid(), pthread_self(), ms_ped[ms_ped_counter].pedido,ms_ped[ms_ped_counter].gen,ms_ped[ms_ped_counter].tempo);
 
-		write(fd_registos, msg, strlen(msg));
-
-                
-                
+		write(fd_registos, msg, strlen(msg));        
                 
 		if(ms_ped[ms_ped_counter].gen=='F'){
 			nr_pedidos_global_F++;    
@@ -126,7 +121,7 @@ int main(int argc, char **argv)
 
 		if(val==atoi(argv[1])){
 			current_gen=ms_ped[ms_ped_counter].gen;
-                      if(sem_wait(&sauna_full)){
+                        if(sem_wait(&sauna_full)){
 				perror("sem_wait_error");
 				exit(1); 
 			}
@@ -171,9 +166,9 @@ int main(int argc, char **argv)
 					nr_rejeitados_global_M++;
 				}
 				ms_ped[ms_ped_counter].rejei+=1;
-                                
+                                sprintf(msg, "%.2f - %d - %lu - %d: %c - %d - REJEITADO \n",(millisecondsAfter-millisecondsBefore)/1000.0, getpid(), pthread_self(), ms_ped[ms_ped_counter].pedido,ms_ped[ms_ped_counter].gen,ms_ped[ms_ped_counter].tempo);
+				write(fd_registos, msg, strlen(msg));
 				write(fd_rejeitados,&ms_ped[ms_ped_counter],sizeof(struct mensagem_pedido));
-
 			}
 		}
 		ms_ped_counter++;
@@ -189,5 +184,4 @@ int main(int argc, char **argv)
 
 	write(fd_registos, estatistica, strlen(estatistica));
 	exit(0);
-
 }
