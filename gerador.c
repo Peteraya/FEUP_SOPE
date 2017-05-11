@@ -178,7 +178,7 @@ int main(int argc, char **argv)
     struct criar_pedido *ped;
     
     fd_entrada = open("/tmp/entrada",O_WRONLY);
-    fd_registos = open(regis, O_WRONLY | O_CREAT | O_EXCL, 0644);
+    fd_registos = open(regis, O_WRONLY | O_CREAT | O_EXCL, 0755);
     
     
     ped = malloc(sizeof(struct criar_pedido));
@@ -188,7 +188,7 @@ int main(int argc, char **argv)
     (*ped).fd_registos = fd_registos;
     
     
-    if (mkfifo("/tmp/entrada",0660)<0){ 
+    if (mkfifo("/tmp/entrada",0755)<0){ 
         if (errno==EEXIST) 
             printf("FIFO '/tmp/entrada' already exists\n"); 
         else

@@ -46,22 +46,19 @@ struct mensagem_pedido{
 
 void* entrar_sauna (void* arg){
 
-
-	char msg[MAXL];
+        char msg[MAXL];
 	struct mensagem_pedido *ms_ped = (struct mensagem_pedido*)arg;
 
 	sleep(ms_ped->tempo/1000);
 
 	gettimeofday(&after,NULL);
 	unsigned long long millisecondsAfter = 1000000 * (unsigned long long)(after.tv_sec) + (unsigned long long)(after.tv_usec);
-
-
-	sprintf(msg, "%.2f - %d - %lu - %d: %c - %d - SERVIDO \n",(millisecondsAfter-millisecondsBefore)/1000.0, getpid(), pthread_self(), ms_ped->pedido,ms_ped->gen,ms_ped->tempo);
-
-
+        
+        sprintf(msg, "%.2f - %d - %lu - %d: %c - %d - SERVIDO \n",(millisecondsAfter-millisecondsBefore)/1000.0, getpid(), pthread_self(), ms_ped->pedido,ms_ped->gen,ms_ped->tempo);
+        
 	write(fd_registos, msg, strlen(msg));
-
-	if(sem_post(&sauna_full)){
+        
+        if(sem_post(&sauna_full)){
 		perror("sem_post_error");
 		exit(1); 
 	}
@@ -83,24 +80,27 @@ int main(int argc, char **argv)
 	}
 
 
-	/*if (mkfifo("/tmp/rejeitados",0660)<0){ 
+	 if(mkfifo("/tmp/rejeitados",0755)<0){ 
 		if (errno==EEXIST) 
 			printf("FIFO '/tmp/rejeitados' already exists\n"); 
 		else
 			printf("Can't create FIFO\n"); 
-	}*/
+	}
 
 
 	int fd_entrada, fd_rejeitados, ms_ped_counter=0, thread_counter=0;
 	pthread_t tid[MAXL];
+
 
 	char regis[MAXL], msg[MAXL];
 
 	sprintf(regis,"/tmp/bal.%d",getpid());
 
 	fd_entrada = open("/tmp/entrada",O_RDONLY);
-	//fd_rejeitados= open("/tmp/rejeitados",O_WRONLY);
-	fd_registos = open(regis, O_WRONLY | O_CREAT | O_EXCL, 0644);
+
+	fd_rejeitados = open("/tmp/rejeitados",O_WRONLY | O_NONBLOCK);
+
+	fd_registos = open(regis, O_WRONLY | O_CREAT | O_EXCL, 0755);
 
 	struct mensagem_pedido ms_ped[MAXL];
 
@@ -115,6 +115,9 @@ int main(int argc, char **argv)
 
 		write(fd_registos, msg, strlen(msg));
 
+                
+                
+                
 		if(ms_ped[ms_ped_counter].gen=='F'){
 			nr_pedidos_global_F++;    
 		}
@@ -131,8 +134,7 @@ int main(int argc, char **argv)
 
 		if(val==atoi(argv[1])){
 			current_gen=ms_ped[ms_ped_counter].gen;
-
-			if(sem_wait(&sauna_full)){
+                      if(sem_wait(&sauna_full)){
 				perror("sem_wait_error");
 				exit(1); 
 			}
@@ -141,19 +143,17 @@ int main(int argc, char **argv)
 				perror("pthread_create_error");
 				exit(1); 
 			}
-
-			if(ms_ped[ms_ped_counter].gen=='F'){
+                      if(ms_ped[ms_ped_counter].gen=='F'){
 				nr_servidos_global_F++;    
 			}
 			else{
 				nr_servidos_global_M++;
 			}
 			thread_counter++;		
-		}
+                }
 		else {
 			if(ms_ped[ms_ped_counter].gen==current_gen){
-
-				if(sem_wait(&sauna_full)){
+                                if(sem_wait(&sauna_full)){
 					perror("sem_wait_error");
 					exit(1); 
 				}
@@ -162,7 +162,7 @@ int main(int argc, char **argv)
 					perror("pthread_create_error");
 					exit(1); 
 				}
-
+				
 				if(ms_ped[ms_ped_counter].gen=='F'){
 					nr_servidos_global_F++;    
 				}
@@ -179,13 +179,13 @@ int main(int argc, char **argv)
 					nr_rejeitados_global_M++;
 				}
 				ms_ped[ms_ped_counter].rejei+=1;
-				//write(fd_rejeitados,&ms_ped[ms_ped_counter],sizeof(struct mensagem_pedido));
+                                
+				write(fd_rejeitados,&ms_ped[ms_ped_counter],sizeof(struct mensagem_pedido));
 
 			}
 		}
 		ms_ped_counter++;
 	}
-
 	for (int j=0;j<=thread_counter;j++){
 		pthread_join(tid[j],NULL);
 
@@ -198,7 +198,7 @@ int main(int argc, char **argv)
 	write(fd_registos, estatistica, strlen(estatistica));
 
 
-	//unlink("/tmp/rejeitados");
+	unlink("/tmp/rejeitados");
 
 	exit(0);
 
