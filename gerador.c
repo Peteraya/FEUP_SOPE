@@ -40,13 +40,10 @@ struct mensagem_pedido{
     int rejei;
 };
 
-struct criar_pedido{
-    
+struct criar_pedido{   
     int nr_pedidos;
     int tempo;
-    int fd_entrada;
     int fd_registos;
-    
 };
 
 
@@ -54,7 +51,7 @@ struct criar_pedido{
 void* criador_pedidos(void* arg){
     
     struct criar_pedido *pedi = (struct criar_pedido*)arg;
-    int nr_pedidos = pedi->nr_pedidos, max_uti = pedi->tempo, fd_entrada=pedi->fd_entrada, fd_registos=pedi->fd_registos;
+    int nr_pedidos = pedi->nr_pedidos, max_uti = pedi->tempo, fd_entrada, fd_registos=pedi->fd_registos;
     
     struct mensagem_pedido ms_ped;
     
@@ -168,7 +165,7 @@ int main(int argc, char **argv)
     gettimeofday(&before,NULL);
     millisecondsBefore = 1000000 * (unsigned long long)(before.tv_sec) + (unsigned long long)(before.tv_usec);
     
-    int fd_registos,fd_entrada;
+    int fd_registos;
     pthread_t tid_creat, tid_reject; 
     char regis[MAXL];
     
@@ -177,23 +174,28 @@ int main(int argc, char **argv)
     
     struct criar_pedido *ped;
     
-    fd_entrada = open("/tmp/entrada",O_WRONLY);
     fd_registos = open(regis, O_WRONLY | O_CREAT | O_EXCL, 0755);
     
     
     ped = malloc(sizeof(struct criar_pedido));
     (*ped).nr_pedidos = atoi(argv[1]);
     (*ped).tempo=atoi(argv[2]);
-    (*ped).fd_entrada = fd_entrada;
     (*ped).fd_registos = fd_registos;
     
     
-    if (mkfifo("/tmp/entrada",0755)<0){ 
+    if (mkfifo("/tmp/entrada",0666)<0){ 
         if (errno==EEXIST) 
             printf("FIFO '/tmp/entrada' already exists\n"); 
         else
             printf("Can't create FIFO\n"); 
     }
+
+	if(mkfifo("/tmp/rejeitados",0666)<0){ 
+		if (errno==EEXIST) 
+			printf("FIFO '/tmp/rejeitados' already exists\n"); 
+		else
+			printf("Can't create FIFO\n"); 
+	}
     
     
     pthread_create(&tid_creat, NULL, criador_pedidos, (void*)ped);
@@ -209,6 +211,6 @@ int main(int argc, char **argv)
     write(fd_registos, estatistica, strlen(estatistica));
  
     unlink("/tmp/entrada");
+	unlink("/tmp/rejeitados");
     exit(0);
 }
-

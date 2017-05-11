@@ -80,14 +80,6 @@ int main(int argc, char **argv)
 	}
 
 
-	 if(mkfifo("/tmp/rejeitados",0755)<0){ 
-		if (errno==EEXIST) 
-			printf("FIFO '/tmp/rejeitados' already exists\n"); 
-		else
-			printf("Can't create FIFO\n"); 
-	}
-
-
 	int fd_entrada, fd_rejeitados, ms_ped_counter=0, thread_counter=0;
 	pthread_t tid[MAXL];
 
@@ -98,7 +90,7 @@ int main(int argc, char **argv)
 
 	fd_entrada = open("/tmp/entrada",O_RDONLY);
 
-	fd_rejeitados = open("/tmp/rejeitados",O_WRONLY | O_NONBLOCK);
+	fd_rejeitados = open("/tmp/rejeitados",O_WRONLY);
 
 	fd_registos = open(regis, O_WRONLY | O_CREAT | O_EXCL, 0755);
 
@@ -196,11 +188,6 @@ int main(int argc, char **argv)
 	sprintf(estatistica, " -Numero de pedidos Masculinos: %d \n -Numero de pedidos Femininos: %d \n -Numero de pedidos Total: %d \n -Numero de rejeicoes recebidas Masculinas: %d \n -Numero de rejeicoes recebidas Femininas: %d \n -Numero de rejeicoes recebidas no Total: %d \n -Numero de pedidos servidos Masculinos: %d \n -Numero de pedidos servidos Femininos: %d \n -Numero de pedidos servidos Total: %d\n", nr_pedidos_global_M,nr_pedidos_global_F, (nr_pedidos_global_F+nr_pedidos_global_M), nr_rejeitados_global_M,nr_rejeitados_global_F,(nr_rejeitados_global_M+nr_rejeitados_global_F),nr_servidos_global_M,nr_servidos_global_F,(nr_servidos_global_M+nr_servidos_global_F));
 
 	write(fd_registos, estatistica, strlen(estatistica));
-
-
-	unlink("/tmp/rejeitados");
-
 	exit(0);
 
 }
-
