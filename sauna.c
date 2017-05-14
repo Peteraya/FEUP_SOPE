@@ -49,7 +49,7 @@ void* entrar_sauna (void* arg){
     char msg[MAXL];
 	struct mensagem_pedido *ms_ped = (struct mensagem_pedido*)arg;
 
-	sleep(ms_ped->tempo/1000);
+	sleep(ms_ped->tempo/1000.0);
 
 	gettimeofday(&after,NULL);
 	unsigned long long millisecondsAfter = 1000000 * (unsigned long long)(after.tv_sec) + (unsigned long long)(after.tv_usec);
@@ -80,7 +80,7 @@ int main(int argc, char **argv)
 	}
 
 
-	int fd_entrada, fd_rejeitados, ms_ped_counter=0, thread_counter=0;
+	int fd_entrada, fd_rejeitados, ms_ped_counter=0, thread_counter=0,read_null_counter=0;;
 	pthread_t tid[MAXL];
 
 
@@ -93,12 +93,26 @@ int main(int argc, char **argv)
 	fd_rejeitados = open("/tmp/rejeitados",O_WRONLY);
 
 	fd_registos = open(regis, O_WRONLY | O_CREAT | O_EXCL, 0755);
+	int flags = fcntl(fd_entrada, F_GETFL, 0);
+	fcntl(fd_entrada, F_SETFL, flags | O_NONBLOCK);
 
 	struct mensagem_pedido ms_ped[MAXL];
 
 	while(read(fd_entrada,&ms_ped[ms_ped_counter],sizeof(struct mensagem_pedido))){
 
-		gettimeofday(&after,NULL);
+	if(!(ms_ped[ms_ped_counter].gen=='F'||ms_ped[ms_ped_counter].gen=='M')){
+		if(read_null_counter==10)
+			break;
+		else {
+			read_null_counter++;
+			sleep(1);
+			continue;
+		}
+	}
+	else 
+		read_null_counter=0;
+		
+gettimeofday(&after,NULL);
 		unsigned long long millisecondsAfter = 1000000 * (unsigned long long)(after.tv_sec) + (unsigned long long)(after.tv_usec);
 
 		sprintf(msg, "%.2f - %d - %lu - %d: %c - %d - RECEBIDO \n",(millisecondsAfter-millisecondsBefore)/1000.0, getpid(), pthread_self(), ms_ped[ms_ped_counter].pedido,ms_ped[ms_ped_counter].gen,ms_ped[ms_ped_counter].tempo);
@@ -173,6 +187,11 @@ int main(int argc, char **argv)
 		}
 		ms_ped_counter++;
 	}
+
+struct mensagem_pedido end_ped;
+end_ped.gen='E';
+write(fd_rejeitados,&end_ped,sizeof(struct mensagem_pedido));
+
 	for (int j=0;j<=thread_counter;j++){
 		pthread_join(tid[j],NULL);
 

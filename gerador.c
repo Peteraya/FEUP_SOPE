@@ -17,6 +17,9 @@
 
 #define MAXL 4000
 
+
+pthread_mutex_t pedi_lock = PTHREAD_MUTEX_INITIALIZER; 
+
 struct timeval before, after;
 unsigned long long millisecondsBefore;
 
@@ -62,11 +65,15 @@ void* criador_pedidos(void* arg){
         
         if(luck==0){
             ms_ped.gen='F';
+            pthread_mutex_lock(&pedi_lock);
             nr_pedidos_global_F++;    
+            pthread_mutex_unlock(&pedi_lock);
         }
         else{
             ms_ped.gen='M';
+            pthread_mutex_lock(&pedi_lock);
             nr_pedidos_global_M++;
+            pthread_mutex_unlock(&pedi_lock);
         }
         luck=rand() % max_uti+1;
         
@@ -103,20 +110,23 @@ void* rejeita_pedidos(void* arg){
     int fd_entrada=pedi->fd_entrada;
     char msg[MAXL];
     
-    gettimeofday(&after,NULL);
-    unsigned long long millisecondsAfter = 1000000 * (unsigned long long)(after.tv_sec) + (unsigned long long)(after.tv_usec);
-    
-    read(fd_rejeitados,&ms_ped,sizeof(struct mensagem_pedido)); 
-    
-    sprintf(msg, "%.2f - %d - %d: %c - %d - REJEITADO \n",(millisecondsAfter-millisecondsBefore)/1000.0, getpid() ,ms_ped.pedido,ms_ped.gen,ms_ped.tempo);
-    write(fd_registos, msg, strlen(msg));
+
+    while(read(fd_rejeitados,&ms_ped,sizeof(struct mensagem_pedido))){ 
     
     if(ms_ped.gen=='F'){
             nr_rejeitados_global_F++;    
     }
-    else{
+    else if(ms_ped.gen=='M'){
             nr_rejeitados_global_M++;
     }
+     else if(ms_ped.gen=='E')
+	break;
+else continue;
+
+    gettimeofday(&after,NULL);
+    unsigned long long millisecondsAfter = 1000000 * (unsigned long long)(after.tv_sec) + (unsigned long long)(after.tv_usec);
+    sprintf(msg, "%.2f - %d - %d: %c - %d - REJEITADO \n",(millisecondsAfter-millisecondsBefore)/1000.0, getpid() ,ms_ped.pedido,ms_ped.gen,ms_ped.tempo);
+    write(fd_registos, msg, strlen(msg));
     
     gettimeofday(&after,NULL);
     millisecondsAfter = 1000000 * (unsigned long long)(after.tv_sec) + (unsigned long long)(after.tv_usec);
@@ -124,10 +134,14 @@ void* rejeita_pedidos(void* arg){
     
     if(ms_ped.rejei<3){      
         if(ms_ped.gen=='F'){
+            pthread_mutex_lock(&pedi_lock);
             nr_pedidos_global_F++;    
+            pthread_mutex_unlock(&pedi_lock);
         }
         else{
+            pthread_mutex_lock(&pedi_lock);
             nr_pedidos_global_M++;
+            pthread_mutex_unlock(&pedi_lock);
         }
         
         sprintf(msg, "%.2f - %d - %d: %c - %d - PEDIDO \n",(millisecondsAfter-millisecondsBefore)/1000.0, getpid() ,ms_ped.pedido,ms_ped.gen,ms_ped.tempo);
@@ -145,6 +159,7 @@ void* rejeita_pedidos(void* arg){
         sprintf(msg, "%.2f - %d - %d: %c - %d - DESCARTADO \n",(millisecondsAfter-millisecondsBefore)/1000.0, getpid() ,ms_ped.pedido,ms_ped.gen,ms_ped.tempo);
         write(fd_registos, msg, strlen(msg));
     }
+}
     return NULL;
 }
 
