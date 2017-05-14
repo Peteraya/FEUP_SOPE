@@ -24,7 +24,7 @@ struct timeval before, after;
 unsigned long long millisecondsBefore;
 
 
-
+pthread_mutex_t sauna_line = PTHREAD_MUTEX_INITIALIZER; 
 sem_t sauna_full;
 
 int fd_registos;
@@ -37,6 +37,7 @@ int nr_pedidos_global_M=0;
 int nr_rejeitados_global_M=0;
 int nr_servidos_global_M=0;
 char current_gen;
+int nr_pessoas_sauna=0;
 
 struct mensagem_pedido{
 	int pedido;
@@ -64,7 +65,7 @@ void endFunction(int fd_rejeitados, int thread_counter,pthread_t tid[]){
 		pthread_join(tid[j],NULL);
 
 	}
-
+	pthread_mutex_destroy(&sauna_line);
 
 	char estatistica[MAXL];
 	sprintf(estatistica, " -Numero de pedidos Masculinos: %d \n -Numero de pedidos Femininos: %d \n -Numero de pedidos Total: %d \n -Numero de rejeicoes recebidas Masculinas: %d \n -Numero de rejeicoes recebidas Femininas: %d \n -Numero de rejeicoes recebidas no Total: %d \n -Numero de pedidos servidos Masculinos: %d \n -Numero de pedidos servidos Femininos: %d \n -Numero de pedidos servidos Total: %d\n", nr_pedidos_global_M,nr_pedidos_global_F, (nr_pedidos_global_F+nr_pedidos_global_M), nr_rejeitados_global_M,nr_rejeitados_global_F,(nr_rejeitados_global_M+nr_rejeitados_global_F),nr_servidos_global_M,nr_servidos_global_F,(nr_servidos_global_M+nr_servidos_global_F));
@@ -98,10 +99,9 @@ unsigned long long getTime(struct timeval *time){
 }
 
 void startThreadEntrarSauna(pthread_t *tid, struct mensagem_pedido *ms_ped){
-	if(sem_wait(&sauna_full)){
-		perror("sem_wait_error");
-		exit(1);
-	}
+	pthread_mutex_lock(&sauna_line);
+	nr_pessoas_sauna++;    
+	pthread_mutex_unlock(&sauna_line);	
 
 	if(pthread_create(tid, NULL, entrar_sauna, (void *) ms_ped)){
 		perror("pthread_create_error");
@@ -114,15 +114,6 @@ void startThreadEntrarSauna(pthread_t *tid, struct mensagem_pedido *ms_ped){
 		nr_servidos_global_M++;
 	}
 	return;
-}
-
-int semGetValue(){
-	int val;
-	if(sem_getvalue(&sauna_full,&val)){
-		perror("sem_getvalue_error");
-		exit(1);
-	}
-	return val;
 }
 
 void refreshNrPedidosGlobal(char gen){
@@ -153,6 +144,11 @@ void* entrar_sauna (void* arg){
 	char msg[MAXL];
 	struct mensagem_pedido *ms_ped = (struct mensagem_pedido*)arg;
 
+	if(sem_wait(&sauna_full)){
+		perror("sem_wait_error");
+		exit(1);
+	}
+
 	usleep(ms_ped->tempo*1000.0);
 
 	struct timeval threadafter;
@@ -166,6 +162,10 @@ void* entrar_sauna (void* arg){
 		perror("sem_post_error");
 		exit(1);
 	}
+
+	pthread_mutex_lock(&sauna_line);
+	nr_pessoas_sauna--;    
+	pthread_mutex_unlock(&sauna_line);
 
 	return NULL;
 }
@@ -207,8 +207,7 @@ int main(int argc, char **argv)
 		write(fd_registos, msg, strlen(msg));
 		refreshNrPedidosGlobal(ms_ped[ms_ped_counter].gen);
 
-		int val=semGetValue();
-		if(val==atoi(argv[1])){
+		if(nr_pessoas_sauna==0){
 			current_gen=ms_ped[ms_ped_counter].gen;
 			startThreadEntrarSauna(&tid[thread_counter], &ms_ped[ms_ped_counter]);
 			thread_counter++;

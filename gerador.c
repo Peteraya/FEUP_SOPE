@@ -166,6 +166,7 @@ unsigned long long getTime(){
 int main(int argc, char **argv)
 {
 	millisecondsBefore = getTime();
+
 	pthread_t tid_creat, tid_reject; 
 	char regis[MAXL];
 
@@ -203,6 +204,7 @@ int main(int argc, char **argv)
 
 	pthread_join(tid_creat, NULL);
 	pthread_join(tid_reject, NULL);
+	pthread_mutex_destroy(&pedi_lock);
 
 	char estatistica[MAXL];
 	sprintf(estatistica, " -Numero de pedidos Masculinos: %d \n -Numero de pedidos Femininos: %d \n -Numero de pedidos Total: %d \n -Numero de rejeicoes recebidas Masculinas: %d \n -Numero de rejeicoes recebidas Femininas: %d \n -Numero de rejeicoes recebidas no Total: %d \n -Numero de rejeicoes descartadas Masculinas: %d \n -Numero de rejeicoes descartadas Femininas: %d \n -Numero de rejeicoes descartadas no Total: %d", nr_pedidos_global_M,nr_pedidos_global_F, (nr_pedidos_global_F+nr_pedidos_global_M), nr_rejeitados_global_M,nr_rejeitados_global_F,(nr_rejeitados_global_M+nr_rejeitados_global_F),nr_descartados_global_M,nr_descartados_global_F,(nr_descartados_global_M+nr_descartados_global_F));
