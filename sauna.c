@@ -49,7 +49,7 @@ void* entrar_sauna (void* arg){
     char msg[MAXL];
 	struct mensagem_pedido *ms_ped = (struct mensagem_pedido*)arg;
 
-	sleep(ms_ped->tempo/1000.0);
+	usleep(ms_ped->tempo*1000.0);
 
 	gettimeofday(&after,NULL);
 	unsigned long long millisecondsAfter = 1000000 * (unsigned long long)(after.tv_sec) + (unsigned long long)(after.tv_usec);
