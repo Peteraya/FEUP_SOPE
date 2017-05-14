@@ -1,0 +1,115 @@
+    Como explicitado no enunciado, o comando de invocação do gerador.c é 
+
+        ./<nome do executável> <n. pedidos> <max. utilização>
+
+    Este comando deve apenas ser executado antes do da sauna, pois esta apenas vai receber os pedidos que já
+tiverem sido criados. Após o programa ter terminado, no directório /tmp serão criados dois novos ficheiros,
+um de nome ger.pid, sendo pid o identificador do processo, e outro denominado bal.pid. Este regista o output 
+da sauna, estando esta informação noutro ficheiro de texto.
+
+    O que deverá estar contido será algo deste género (usando um caso de teste com 10 pedidos com um tempo
+máximo de utilização de 1000 milisegundos):
+    
+1913.62 - 27251 - 0: M - 957 - PEDIDO 
+1913.65 - 27251 - 1: F - 57 - PEDIDO 
+1913.65 - 27251 - 2: M - 373 - PEDIDO 
+1913.65 - 27251 - 3: F - 941 - PEDIDO 
+1913.66 - 27251 - 4: M - 857 - PEDIDO 
+1913.66 - 27251 - 5: M - 208 - PEDIDO 
+1913.66 - 27251 - 6: M - 736 - PEDIDO 
+1913.67 - 27251 - 7: F - 151 - PEDIDO 
+1913.67 - 27251 - 8: M - 198 - PEDIDO 
+1913.67 - 27251 - 9: F - 678 - PEDIDO 
+1913.81 - 27251 - 1: F - 57 - REJEITADO 
+1913.82 - 27251 - 1: F - 57 - PEDIDO 
+1913.84 - 27251 - 3: F - 941 - REJEITADO 
+1913.84 - 27251 - 3: F - 941 - PEDIDO 
+1913.91 - 27251 - 7: F - 151 - REJEITADO 
+1913.92 - 27251 - 7: F - 151 - PEDIDO 
+2122.36 - 27251 - 9: F - 678 - REJEITADO 
+2122.37 - 27251 - 9: F - 678 - PEDIDO 
+2122.38 - 27251 - 1: F - 57 - REJEITADO 
+2122.38 - 27251 - 1: F - 57 - PEDIDO 
+2122.39 - 27251 - 3: F - 941 - REJEITADO 
+2122.39 - 27251 - 3: F - 941 - PEDIDO 
+2122.40 - 27251 - 7: F - 151 - REJEITADO 
+2122.40 - 27251 - 7: F - 151 - PEDIDO 
+ -Numero de pedidos Masculinos: 6 
+ -Numero de pedidos Femininos: 11 
+ -Numero de pedidos Total: 17 
+ -Numero de rejeicoes recebidas Masculinas: 0 
+ -Numero de rejeicoes recebidas Femininas: 7 
+ -Numero de rejeicoes recebidas no Total: 7 
+ -Numero de rejeicoes descartadas Masculinas: 0 
+ -Numero de rejeicoes descartadas Femininas: 0 
+ -Numero de rejeicoes descartadas no Total: 0 
+
+    Iremos sub-dividir esta informação em três pontos. O primeiro é o registo de todos os pedidos.
+    
+1913.62 - 27251 - 0: M - 957 - PEDIDO 
+1913.65 - 27251 - 1: F - 57 - PEDIDO 
+1913.65 - 27251 - 2: M - 373 - PEDIDO 
+1913.65 - 27251 - 3: F - 941 - PEDIDO 
+1913.66 - 27251 - 4: M - 857 - PEDIDO 
+1913.66 - 27251 - 5: M - 208 - PEDIDO 
+1913.66 - 27251 - 6: M - 736 - PEDIDO 
+1913.67 - 27251 - 7: F - 151 - PEDIDO 
+1913.67 - 27251 - 8: M - 198 - PEDIDO 
+1913.67 - 27251 - 9: F - 678 - PEDIDO 
+
+    Aqui são gerados aleatoriamente 10 pedidos, apresentando cada um a informação pedida no enunciado.
+
+        inst – pid – p: g – dur – tip
+    
+            inst - Instante em que a mensagem foi emitida desde o inicio do programa.   
+        
+            pid - identificador do processo.
+    
+            p - Número sequencial do pedido.
+    
+            g - Género do utilizador.
+    
+            dur - Duração pedida para a utilização de um lugar na sauna.
+    
+            tip - Tipo de mensagem, pode ser "PEDIDO", "REJEITADO", ou "DESCARTADO".
+    
+    Neste ponto apenas se trata da geração dos pedidos, por isso apenas a primeira mensagem poderá ser
+apresentada.
+
+    No ponto seguinte, apresenta-se a o tratamento dos pedidos por parte da sauna.
+
+1913.81 - 27251 - 1: F - 57 - REJEITADO 
+1913.82 - 27251 - 1: F - 57 - PEDIDO 
+1913.84 - 27251 - 3: F - 941 - REJEITADO 
+1913.84 - 27251 - 3: F - 941 - PEDIDO 
+1913.91 - 27251 - 7: F - 151 - REJEITADO 
+1913.92 - 27251 - 7: F - 151 - PEDIDO 
+2122.36 - 27251 - 9: F - 678 - REJEITADO 
+2122.37 - 27251 - 9: F - 678 - PEDIDO 
+2122.38 - 27251 - 1: F - 57 - REJEITADO 
+2122.38 - 27251 - 1: F - 57 - PEDIDO 
+2122.39 - 27251 - 3: F - 941 - REJEITADO 
+2122.39 - 27251 - 3: F - 941 - PEDIDO 
+2122.40 - 27251 - 7: F - 151 - REJEITADO 
+2122.40 - 27251 - 7: F - 151 - PEDIDO 
+    
+    Aqui são apresentados os pedidos que foram rejeitados pela sauna. Se for a terceira rejeição de um
+mesmo pedido, este é descartado, se não for o caso, é colocado novamente na fila de pedidos. É 
+exatamente isso que pode ser visto aqui.Todos os pedidos femininos que foram rejeitados são novamente 
+colocados na fila, e são dirigidos para a sauna mais uma vez. 
+
+    Por fim temos o registo final de todas as operações relevantes que ocorreram durante a execução do 
+programa. 
+
+ -Numero de pedidos Masculinos: 6 
+ -Numero de pedidos Femininos: 11 
+ -Numero de pedidos Total: 17 
+ -Numero de rejeicoes recebidas Masculinas: 0 
+ -Numero de rejeicoes recebidas Femininas: 7 
+ -Numero de rejeicoes recebidas no Total: 7 
+ -Numero de rejeicoes descartadas Masculinas: 0 
+ -Numero de rejeicoes descartadas Femininas: 0 
+ -Numero de rejeicoes descartadas no Total: 0 
+ 
+    Estas valores apresentados são guardados por variáveis no programa que servem essencialmente como 
+contadores que são incrementados caso alguma das situações ocorra.

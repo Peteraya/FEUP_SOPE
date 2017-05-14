@@ -1,0 +1,134 @@
+    Como explicitado no enunciado, o comando de invocação do gerador.c é 
+
+        ./<nome do executável> <n. lugares>
+
+    O número de lugares é a capacidade máxima da sauna.
+
+    O que deverá estar contido será algo deste género (usando um caso de teste com 10 pedidos com um tempo
+máximo de utilização de 1000 milisegundos, e uma sauna com 5 lugares):
+    
+0.30 - 27255 - 139942282684160 - 0: M - 957 - RECEBIDO 
+0.36 - 27255 - 139942282684160 - 1: F - 57 - RECEBIDO 
+0.36 - 27255 - 139942282684160 - 1: F - 57 - REJEITADO 
+0.37 - 27255 - 139942282684160 - 2: M - 373 - RECEBIDO 
+0.39 - 27255 - 139942282684160 - 3: F - 941 - RECEBIDO 
+0.39 - 27255 - 139942282684160 - 3: F - 941 - REJEITADO 
+0.40 - 27255 - 139942282684160 - 4: M - 857 - RECEBIDO 
+0.42 - 27255 - 139942282684160 - 5: M - 208 - RECEBIDO 
+0.45 - 27255 - 139942282684160 - 6: M - 736 - RECEBIDO 
+0.47 - 27255 - 139942282684160 - 7: F - 151 - RECEBIDO 
+0.47 - 27255 - 139942282684160 - 7: F - 151 - REJEITADO 
+0.48 - 27255 - 139942282684160 - 8: M - 198 - RECEBIDO 
+208.73 - 27255 - 139942249191168 - 5: M - 208 - SERVIDO 
+208.88 - 27255 - 139942282684160 - 9: F - 678 - RECEBIDO 
+208.88 - 27255 - 139942282684160 - 9: F - 678 - REJEITADO 
+208.90 - 27255 - 139942282684160 - 1: F - 57 - RECEBIDO 
+208.90 - 27255 - 139942282684160 - 1: F - 57 - REJEITADO 
+208.91 - 27255 - 139942282684160 - 3: F - 941 - RECEBIDO 
+208.91 - 27255 - 139942282684160 - 3: F - 941 - REJEITADO 
+208.92 - 27255 - 139942282684160 - 7: F - 151 - RECEBIDO 
+208.92 - 27255 - 139942282684160 - 7: F - 151 - REJEITADO 
+373.66 - 27255 - 139942265976576 - 2: M - 373 - SERVIDO 
+406.96 - 27255 - 139942232405760 - 8: M - 198 - SERVIDO 
+736.70 - 27255 - 139942240798464 - 6: M - 736 - SERVIDO 
+858.14 - 27255 - 139942257583872 - 4: M - 857 - SERVIDO 
+957.51 - 27255 - 139942274369280 - 0: M - 957 - SERVIDO 
+1209.18 - 27255 - 139942282684160 - 9: F - 678 - RECEBIDO 
+1209.28 - 27255 - 139942282684160 - 1: F - 57 - RECEBIDO 
+1209.38 - 27255 - 139942282684160 - 3: F - 941 - RECEBIDO 
+1209.46 - 27255 - 139942282684160 - 7: F - 151 - RECEBIDO 
+1266.72 - 27255 - 139942215620352 - 1: F - 57 - SERVIDO 
+1360.83 - 27255 - 139942198834944 - 7: F - 151 - SERVIDO 
+1888.01 - 27255 - 139942224013056 - 9: F - 678 - SERVIDO 
+2151.06 - 27255 - 139942207227648 - 3: F - 941 - SERVIDO 
+ -Numero de pedidos Masculinos: 6 
+ -Numero de pedidos Femininos: 11 
+ -Numero de pedidos Total: 17 
+ -Numero de rejeicoes recebidas Masculinas: 0 
+ -Numero de rejeicoes recebidas Femininas: 7 
+ -Numero de rejeicoes recebidas no Total: 7 
+ -Numero de pedidos servidos Masculinos: 6 
+ -Numero de pedidos servidos Femininos: 4 
+ -Numero de pedidos servidos Total: 10
+
+
+    Sub-dividindo a informação, obtemos apenas dois pontos distintos. O primeiro, e maior pedaço, é a 
+do processamento dos pedidos.
+ 
+0.30 - 27255 - 139942282684160 - 0: M - 957 - RECEBIDO 
+0.36 - 27255 - 139942282684160 - 1: F - 57 - RECEBIDO 
+0.36 - 27255 - 139942282684160 - 1: F - 57 - REJEITADO 
+0.37 - 27255 - 139942282684160 - 2: M - 373 - RECEBIDO 
+0.39 - 27255 - 139942282684160 - 3: F - 941 - RECEBIDO 
+0.39 - 27255 - 139942282684160 - 3: F - 941 - REJEITADO 
+0.40 - 27255 - 139942282684160 - 4: M - 857 - RECEBIDO 
+0.42 - 27255 - 139942282684160 - 5: M - 208 - RECEBIDO 
+0.45 - 27255 - 139942282684160 - 6: M - 736 - RECEBIDO 
+0.47 - 27255 - 139942282684160 - 7: F - 151 - RECEBIDO 
+0.47 - 27255 - 139942282684160 - 7: F - 151 - REJEITADO 
+0.48 - 27255 - 139942282684160 - 8: M - 198 - RECEBIDO 
+208.73 - 27255 - 139942249191168 - 5: M - 208 - SERVIDO 
+208.88 - 27255 - 139942282684160 - 9: F - 678 - RECEBIDO 
+208.88 - 27255 - 139942282684160 - 9: F - 678 - REJEITADO 
+208.90 - 27255 - 139942282684160 - 1: F - 57 - RECEBIDO 
+208.90 - 27255 - 139942282684160 - 1: F - 57 - REJEITADO 
+208.91 - 27255 - 139942282684160 - 3: F - 941 - RECEBIDO 
+208.91 - 27255 - 139942282684160 - 3: F - 941 - REJEITADO 
+208.92 - 27255 - 139942282684160 - 7: F - 151 - RECEBIDO 
+208.92 - 27255 - 139942282684160 - 7: F - 151 - REJEITADO 
+373.66 - 27255 - 139942265976576 - 2: M - 373 - SERVIDO 
+406.96 - 27255 - 139942232405760 - 8: M - 198 - SERVIDO 
+736.70 - 27255 - 139942240798464 - 6: M - 736 - SERVIDO 
+858.14 - 27255 - 139942257583872 - 4: M - 857 - SERVIDO 
+957.51 - 27255 - 139942274369280 - 0: M - 957 - SERVIDO 
+1209.18 - 27255 - 139942282684160 - 9: F - 678 - RECEBIDO 
+1209.28 - 27255 - 139942282684160 - 1: F - 57 - RECEBIDO 
+1209.38 - 27255 - 139942282684160 - 3: F - 941 - RECEBIDO 
+1209.46 - 27255 - 139942282684160 - 7: F - 151 - RECEBIDO 
+1266.72 - 27255 - 139942215620352 - 1: F - 57 - SERVIDO 
+1360.83 - 27255 - 139942198834944 - 7: F - 151 - SERVIDO 
+1888.01 - 27255 - 139942224013056 - 9: F - 678 - SERVIDO 
+2151.06 - 27255 - 139942207227648 - 3: F - 941 - SERVIDO 
+
+    Aqui são gerados aleatoriamente 10 pedidos, apresentando cada um a informação pedida no enunciado.
+
+        inst – pid – tid – p: g – dur – tip    
+        
+            inst - Instante em que a mensagem foi emitida desde o inicio do programa.   
+        
+            pid - Identificador do processo.
+            
+            tid - Identificador do Thread
+    
+            p - Número sequencial do pedido.
+    
+            g - Género do utilizador.
+    
+            dur - Duração pedida para a utilização de um lugar na sauna.
+    
+            tip - Tipo de mensagem, pode ser "RECEBIDO", "SERVIDO", ou "REJEITADO".
+            
+    Existem múltiplos threads na execução deste ficheiro. Um principal que efectua a recepção e 
+processamento dos pedidos, e no fim disto imprime as estatísticas associadas (que é o ponto seguinte),
+e outros threads gerados na hora que esperam pela conclusão da utilização de cada pedido da sauna.
+    Por este motivo, faz sentido a existência de o parâmetro tid nos "printfs" executados, algo que 
+não estava presente no ficheiro criado pelo gerador. 
+    
+    Em relação à informação, cada pedido após ser recebido é processado. Caso o género dos(as) atuais 
+ocupantes da sauna seja diferente ao do pedido, este é rejeitado e enviado de volta para o gerador. 
+
+    Por fim temos o registo final de todas as operações relevantes que ocorreram durante a execução do 
+programa. 
+
+ -Numero de pedidos Masculinos: 6 
+ -Numero de pedidos Femininos: 11 
+ -Numero de pedidos Total: 17 
+ -Numero de rejeicoes recebidas Masculinas: 0 
+ -Numero de rejeicoes recebidas Femininas: 7 
+ -Numero de rejeicoes recebidas no Total: 7 
+ -Numero de pedidos servidos Masculinos: 6 
+ -Numero de pedidos servidos Femininos: 4 
+ -Numero de pedidos servidos Total: 10
+
+    Estas valores apresentados são guardados por variáveis no programa que servem essencialmente como 
+contadores que são incrementados caso alguma das situações ocorra.
