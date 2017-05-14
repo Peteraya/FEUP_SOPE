@@ -8,54 +8,64 @@ um de nome ger.pid, sendo pid o identificador do processo, e outro denominado ba
 da sauna, estando esta informação noutro ficheiro de texto.
 
     O que deverá estar contido será algo deste género (usando um caso de teste com 10 pedidos com um tempo
-máximo de utilização de 1000 milisegundos):
+máximo de utilização de 10000 milisegundos, ou 10 segundos):
     
-1913.62 - 27251 - 0: M - 957 - PEDIDO 
-1913.65 - 27251 - 1: F - 57 - PEDIDO 
-1913.65 - 27251 - 2: M - 373 - PEDIDO 
-1913.65 - 27251 - 3: F - 941 - PEDIDO 
-1913.66 - 27251 - 4: M - 857 - PEDIDO 
-1913.66 - 27251 - 5: M - 208 - PEDIDO 
-1913.66 - 27251 - 6: M - 736 - PEDIDO 
-1913.67 - 27251 - 7: F - 151 - PEDIDO 
-1913.67 - 27251 - 8: M - 198 - PEDIDO 
-1913.67 - 27251 - 9: F - 678 - PEDIDO 
-1913.81 - 27251 - 1: F - 57 - REJEITADO 
-1913.82 - 27251 - 1: F - 57 - PEDIDO 
-1913.84 - 27251 - 3: F - 941 - REJEITADO 
-1913.84 - 27251 - 3: F - 941 - PEDIDO 
-1913.91 - 27251 - 7: F - 151 - REJEITADO 
-1913.92 - 27251 - 7: F - 151 - PEDIDO 
-2122.36 - 27251 - 9: F - 678 - REJEITADO 
-2122.37 - 27251 - 9: F - 678 - PEDIDO 
-2122.38 - 27251 - 1: F - 57 - REJEITADO 
-2122.38 - 27251 - 1: F - 57 - PEDIDO 
-2122.39 - 27251 - 3: F - 941 - REJEITADO 
-2122.39 - 27251 - 3: F - 941 - PEDIDO 
-2122.40 - 27251 - 7: F - 151 - REJEITADO 
-2122.40 - 27251 - 7: F - 151 - PEDIDO 
+2730.17 - 2240 - 0: M - 1950 - PEDIDO 
+2730.32 - 2240 - 1: F - 4230 - PEDIDO 
+2730.36 - 2240 - 2: F - 3173 - PEDIDO 
+2730.38 - 2240 - 3: M - 713 - PEDIDO 
+2730.40 - 2240 - 4: F - 6592 - PEDIDO 
+2730.42 - 2240 - 5: M - 749 - PEDIDO 
+2730.44 - 2240 - 6: F - 765 - PEDIDO 
+2730.46 - 2240 - 7: M - 1739 - PEDIDO 
+2730.48 - 2240 - 8: M - 4754 - PEDIDO 
+2730.51 - 2240 - 9: M - 5205 - PEDIDO 
+2731.47 - 2240 - 1: F - 4230 - REJEITADO 
+2731.50 - 2240 - 1: F - 4230 - PEDIDO 
+2732.14 - 2240 - 2: F - 3173 - REJEITADO 
+2732.17 - 2240 - 2: F - 3173 - PEDIDO 
+2732.44 - 2240 - 4: F - 6592 - REJEITADO 
+2732.47 - 2240 - 4: F - 6592 - PEDIDO 
+2732.74 - 2240 - 6: F - 765 - REJEITADO 
+2732.77 - 2240 - 6: F - 765 - PEDIDO 
+2733.16 - 2240 - 1: F - 4230 - REJEITADO 
+2733.19 - 2240 - 1: F - 4230 - PEDIDO 
+2733.32 - 2240 - 2: F - 3173 - REJEITADO 
+2733.34 - 2240 - 2: F - 3173 - PEDIDO 
+2733.46 - 2240 - 4: F - 6592 - REJEITADO 
+2733.49 - 2240 - 4: F - 6592 - PEDIDO 
+2733.61 - 2240 - 6: F - 765 - REJEITADO 
+2733.63 - 2240 - 6: F - 765 - PEDIDO 
+2733.76 - 2240 - 1: F - 4230 - REJEITADO 
+2733.78 - 2240 - 1: F - 4230 - DESCARTADO 
+2733.89 - 2240 - 2: F - 3173 - REJEITADO 
+2733.92 - 2240 - 2: F - 3173 - DESCARTADO 
+2734.03 - 2240 - 4: F - 6592 - REJEITADO 
+2734.06 - 2240 - 4: F - 6592 - DESCARTADO 
+2734.18 - 2240 - 6: F - 765 - REJEITADO 
+2734.20 - 2240 - 6: F - 765 - DESCARTADO 
  -Numero de pedidos Masculinos: 6 
- -Numero de pedidos Femininos: 11 
- -Numero de pedidos Total: 17 
+ -Numero de pedidos Femininos: 12 
+ -Numero de pedidos Total: 18 
  -Numero de rejeicoes recebidas Masculinas: 0 
- -Numero de rejeicoes recebidas Femininas: 7 
- -Numero de rejeicoes recebidas no Total: 7 
+ -Numero de rejeicoes recebidas Femininas: 12 
+ -Numero de rejeicoes recebidas no Total: 12 
  -Numero de rejeicoes descartadas Masculinas: 0 
- -Numero de rejeicoes descartadas Femininas: 0 
- -Numero de rejeicoes descartadas no Total: 0 
-
+ -Numero de rejeicoes descartadas Femininas: 4 
+ -Numero de rejeicoes descartadas no Total: 4
+ 
     Iremos sub-dividir esta informação em três pontos. O primeiro é o registo de todos os pedidos.
     
-1913.62 - 27251 - 0: M - 957 - PEDIDO 
-1913.65 - 27251 - 1: F - 57 - PEDIDO 
-1913.65 - 27251 - 2: M - 373 - PEDIDO 
-1913.65 - 27251 - 3: F - 941 - PEDIDO 
-1913.66 - 27251 - 4: M - 857 - PEDIDO 
-1913.66 - 27251 - 5: M - 208 - PEDIDO 
-1913.66 - 27251 - 6: M - 736 - PEDIDO 
-1913.67 - 27251 - 7: F - 151 - PEDIDO 
-1913.67 - 27251 - 8: M - 198 - PEDIDO 
-1913.67 - 27251 - 9: F - 678 - PEDIDO 
+2730.17 - 2240 - 0: M - 1950 - PEDIDO 
+2730.32 - 2240 - 1: F - 4230 - PEDIDO 
+2730.36 - 2240 - 2: F - 3173 - PEDIDO 
+2730.38 - 2240 - 3: M - 713 - PEDIDO 
+2730.40 - 2240 - 4: F - 6592 - PEDIDO 
+2730.42 - 2240 - 5: M - 749 - PEDIDO 
+2730.44 - 2240 - 6: F - 765 - PEDIDO 
+2730.46 - 2240 - 7: M - 1739 - PEDIDO 
+2730.48 - 2240 - 8: M - 4754 - PEDIDO 
+2730.51 - 2240 - 9: M - 5205 - PEDIDO 
 
     Aqui são gerados aleatoriamente 10 pedidos, apresentando cada um a informação pedida no enunciado.
 
@@ -78,38 +88,49 @@ apresentada.
 
     No ponto seguinte, apresenta-se a o tratamento dos pedidos por parte da sauna.
 
-1913.81 - 27251 - 1: F - 57 - REJEITADO 
-1913.82 - 27251 - 1: F - 57 - PEDIDO 
-1913.84 - 27251 - 3: F - 941 - REJEITADO 
-1913.84 - 27251 - 3: F - 941 - PEDIDO 
-1913.91 - 27251 - 7: F - 151 - REJEITADO 
-1913.92 - 27251 - 7: F - 151 - PEDIDO 
-2122.36 - 27251 - 9: F - 678 - REJEITADO 
-2122.37 - 27251 - 9: F - 678 - PEDIDO 
-2122.38 - 27251 - 1: F - 57 - REJEITADO 
-2122.38 - 27251 - 1: F - 57 - PEDIDO 
-2122.39 - 27251 - 3: F - 941 - REJEITADO 
-2122.39 - 27251 - 3: F - 941 - PEDIDO 
-2122.40 - 27251 - 7: F - 151 - REJEITADO 
-2122.40 - 27251 - 7: F - 151 - PEDIDO 
+2731.47 - 2240 - 1: F - 4230 - REJEITADO 
+2731.50 - 2240 - 1: F - 4230 - PEDIDO 
+2732.14 - 2240 - 2: F - 3173 - REJEITADO 
+2732.17 - 2240 - 2: F - 3173 - PEDIDO 
+2732.44 - 2240 - 4: F - 6592 - REJEITADO 
+2732.47 - 2240 - 4: F - 6592 - PEDIDO 
+2732.74 - 2240 - 6: F - 765 - REJEITADO 
+2732.77 - 2240 - 6: F - 765 - PEDIDO 
+2733.16 - 2240 - 1: F - 4230 - REJEITADO 
+2733.19 - 2240 - 1: F - 4230 - PEDIDO 
+2733.32 - 2240 - 2: F - 3173 - REJEITADO 
+2733.34 - 2240 - 2: F - 3173 - PEDIDO 
+2733.46 - 2240 - 4: F - 6592 - REJEITADO 
+2733.49 - 2240 - 4: F - 6592 - PEDIDO 
+2733.61 - 2240 - 6: F - 765 - REJEITADO 
+2733.63 - 2240 - 6: F - 765 - PEDIDO 
+2733.76 - 2240 - 1: F - 4230 - REJEITADO 
+2733.78 - 2240 - 1: F - 4230 - DESCARTADO 
+2733.89 - 2240 - 2: F - 3173 - REJEITADO 
+2733.92 - 2240 - 2: F - 3173 - DESCARTADO 
+2734.03 - 2240 - 4: F - 6592 - REJEITADO 
+2734.06 - 2240 - 4: F - 6592 - DESCARTADO 
+2734.18 - 2240 - 6: F - 765 - REJEITADO 
+2734.20 - 2240 - 6: F - 765 - DESCARTADO 
     
     Aqui são apresentados os pedidos que foram rejeitados pela sauna. Se for a terceira rejeição de um
 mesmo pedido, este é descartado, se não for o caso, é colocado novamente na fila de pedidos. É 
 exatamente isso que pode ser visto aqui.Todos os pedidos femininos que foram rejeitados são novamente 
 colocados na fila, e são dirigidos para a sauna mais uma vez. 
+    Como o tempo de espera é tão grande, vemos que até alguns dos pedidos são descartados. 
 
     Por fim temos o registo final de todas as operações relevantes que ocorreram durante a execução do 
 programa. 
 
  -Numero de pedidos Masculinos: 6 
- -Numero de pedidos Femininos: 11 
- -Numero de pedidos Total: 17 
+ -Numero de pedidos Femininos: 12 
+ -Numero de pedidos Total: 18 
  -Numero de rejeicoes recebidas Masculinas: 0 
- -Numero de rejeicoes recebidas Femininas: 7 
- -Numero de rejeicoes recebidas no Total: 7 
+ -Numero de rejeicoes recebidas Femininas: 12 
+ -Numero de rejeicoes recebidas no Total: 12 
  -Numero de rejeicoes descartadas Masculinas: 0 
- -Numero de rejeicoes descartadas Femininas: 0 
- -Numero de rejeicoes descartadas no Total: 0 
+ -Numero de rejeicoes descartadas Femininas: 4 
+ -Numero de rejeicoes descartadas no Total: 4
  
     Estas valores apresentados são guardados por variáveis no programa que servem essencialmente como 
 contadores que são incrementados caso alguma das situações ocorra.
