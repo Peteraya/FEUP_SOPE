@@ -16,11 +16,12 @@
 #include <time.h>
 
 #define MAXL 4000
+#define FIFO_ENTRADA "/tmp/entrada"
+#define FIFO_REJEITADOS "/tmp/rejeitados"
 
 
 pthread_mutex_t pedi_lock = PTHREAD_MUTEX_INITIALIZER; 
 
-struct timeval before, after;
 unsigned long long millisecondsBefore;
 
 int nr_pedidos_global_F=0;
@@ -33,187 +34,182 @@ int nr_descartados_global_M=0;
 
 
 struct mensagem_pedido{
-    int pedido;
-    char gen;
-    int tempo;
-    int rejei;
+	int pedido;
+	char gen;
+	int tempo;
+	int rejei;
 };
 
 struct criar_pedido{   
-    int nr_pedidos;
-    int tempo;
-    int fd_registos;
-    int fd_entrada;
+	int nr_pedidos;
+	int tempo;
+	int fd_registos;
+	int fd_entrada;
 };
 
-
+unsigned long long getTime();
+void* criador_pedidos(void* arg);
+void* rejeita_pedidos(void* arg);
 
 void* criador_pedidos(void* arg){
-    
-    struct criar_pedido *pedi = (struct criar_pedido*)arg;
-    int nr_pedidos = pedi->nr_pedidos, max_uti = pedi->tempo, fd_entrada=pedi->fd_entrada, fd_registos=pedi->fd_registos;
-    
-    struct mensagem_pedido ms_ped;
-    time_t t;
-    srand((unsigned) time(&t));
-    for(int i=0; i< nr_pedidos; i++){
-        
-        int luck=rand()%2;
-        
-        ms_ped.pedido = i;
-        
-        
-        if(luck==0){
-            ms_ped.gen='F';
-            pthread_mutex_lock(&pedi_lock);
-            nr_pedidos_global_F++;    
-            pthread_mutex_unlock(&pedi_lock);
-        }
-        else{
-            ms_ped.gen='M';
-            pthread_mutex_lock(&pedi_lock);
-            nr_pedidos_global_M++;
-            pthread_mutex_unlock(&pedi_lock);
-        }
-        luck=rand() % max_uti+1;
-        
-        ms_ped.tempo=luck;
-        ms_ped.rejei=0;
-        char msg[MAXL];
-        
-        
-        gettimeofday(&after,NULL);
-        unsigned long long millisecondsAfter = 1000000 * (unsigned long long)(after.tv_sec) + (unsigned long long)(after.tv_usec);
-    
-        sprintf(msg, "%.2f - %d - %d: %c - %d - PEDIDO \n",(millisecondsAfter-millisecondsBefore)/1000.0, getpid() ,ms_ped.pedido,ms_ped.gen,ms_ped.tempo);
-        write(fd_registos, msg, strlen(msg));
-        
-        
-        write(fd_entrada,&ms_ped,sizeof(struct mensagem_pedido)); 
-        
-    }
-    
-    
-    return NULL;
+
+	struct criar_pedido *pedi = (struct criar_pedido*)arg;
+	int nr_pedidos = pedi->nr_pedidos, max_uti = pedi->tempo, fd_entrada=pedi->fd_entrada, fd_registos=pedi->fd_registos;
+
+	struct mensagem_pedido ms_ped;
+	time_t t;
+	srand((unsigned) time(&t));
+
+	for(int i=0; i< nr_pedidos; i++){
+
+		int luck=rand()%2;
+
+		ms_ped.pedido = i;
+
+
+		if(luck==0){
+			ms_ped.gen='F';
+			pthread_mutex_lock(&pedi_lock);
+			nr_pedidos_global_F++;    
+			pthread_mutex_unlock(&pedi_lock);
+		}
+		else{
+			ms_ped.gen='M';
+			pthread_mutex_lock(&pedi_lock);
+			nr_pedidos_global_M++;
+			pthread_mutex_unlock(&pedi_lock);
+		}
+		luck=rand() % max_uti+1;
+
+		ms_ped.tempo=luck;
+		ms_ped.rejei=0;
+		char msg[MAXL];
+
+		unsigned long long millisecondsAfter = getTime();
+
+		sprintf(msg, "%.2f - %d - %d: %c - %d - PEDIDO \n",(millisecondsAfter-millisecondsBefore)/1000.0, getpid() ,ms_ped.pedido,ms_ped.gen,ms_ped.tempo);
+		write(fd_registos, msg, strlen(msg));
+
+
+		write(fd_entrada,&ms_ped,sizeof(struct mensagem_pedido)); 
+
+	}
+
+
+	return NULL;
 }
 
 
 void* rejeita_pedidos(void* arg){
-    
-    struct mensagem_pedido ms_ped;
-    
-    
-    int fd_rejeitados=open("/tmp/rejeitados",O_RDONLY);
-    
-    struct criar_pedido *pedi = (struct criar_pedido*)arg;
-    int fd_registos = pedi->fd_registos;
-    int fd_entrada=pedi->fd_entrada;
-    char msg[MAXL];
-    
 
-    while(read(fd_rejeitados,&ms_ped,sizeof(struct mensagem_pedido))){ 
-    
-    if(ms_ped.gen=='F'){
-            nr_rejeitados_global_F++;    
-    }
-    else if(ms_ped.gen=='M'){
-            nr_rejeitados_global_M++;
-    }
-     else if(ms_ped.gen=='E')
-	break;
-else continue;
+	struct mensagem_pedido ms_ped;
+	int fd_rejeitados=open(FIFO_REJEITADOS,O_RDONLY);
+	struct criar_pedido *pedi = (struct criar_pedido*)arg;
+	int fd_registos = pedi->fd_registos;
+	int fd_entrada=pedi->fd_entrada;
+	char msg[MAXL];
 
-    gettimeofday(&after,NULL);
-    unsigned long long millisecondsAfter = 1000000 * (unsigned long long)(after.tv_sec) + (unsigned long long)(after.tv_usec);
-    sprintf(msg, "%.2f - %d - %d: %c - %d - REJEITADO \n",(millisecondsAfter-millisecondsBefore)/1000.0, getpid() ,ms_ped.pedido,ms_ped.gen,ms_ped.tempo);
-    write(fd_registos, msg, strlen(msg));
-    
-    gettimeofday(&after,NULL);
-    millisecondsAfter = 1000000 * (unsigned long long)(after.tv_sec) + (unsigned long long)(after.tv_usec);
-    
-    
-    if(ms_ped.rejei<3){      
-        if(ms_ped.gen=='F'){
-            pthread_mutex_lock(&pedi_lock);
-            nr_pedidos_global_F++;    
-            pthread_mutex_unlock(&pedi_lock);
-        }
-        else{
-            pthread_mutex_lock(&pedi_lock);
-            nr_pedidos_global_M++;
-            pthread_mutex_unlock(&pedi_lock);
-        }
-        
-        sprintf(msg, "%.2f - %d - %d: %c - %d - PEDIDO \n",(millisecondsAfter-millisecondsBefore)/1000.0, getpid() ,ms_ped.pedido,ms_ped.gen,ms_ped.tempo);
-        write(fd_registos, msg, strlen(msg));
-        write(fd_entrada,&ms_ped,sizeof(struct mensagem_pedido)); 
-    }
-    else{
-        
-        if(ms_ped.gen=='F'){
-            nr_descartados_global_F++;    
-        }
-        else{
-           nr_descartados_global_M++;
-        }
-        sprintf(msg, "%.2f - %d - %d: %c - %d - DESCARTADO \n",(millisecondsAfter-millisecondsBefore)/1000.0, getpid() ,ms_ped.pedido,ms_ped.gen,ms_ped.tempo);
-        write(fd_registos, msg, strlen(msg));
-    }
-}
-    return NULL;
+	while(read(fd_rejeitados,&ms_ped,sizeof(struct mensagem_pedido))){ 
+
+		if(ms_ped.gen=='F'){
+			nr_rejeitados_global_F++;    
+		}
+		else if(ms_ped.gen=='M'){
+			nr_rejeitados_global_M++;
+		}
+		else if(ms_ped.gen=='E')
+			break;
+		else continue;
+
+		unsigned long long millisecondsAfter = getTime();
+		sprintf(msg, "%.2f - %d - %d: %c - %d - REJEITADO \n",(millisecondsAfter-millisecondsBefore)/1000.0, getpid() ,ms_ped.pedido,ms_ped.gen,ms_ped.tempo);
+		write(fd_registos, msg, strlen(msg));
+
+		if(ms_ped.rejei<3){      
+			if(ms_ped.gen=='F'){
+				pthread_mutex_lock(&pedi_lock);
+				nr_pedidos_global_F++;    
+				pthread_mutex_unlock(&pedi_lock);
+			}
+			else{
+				pthread_mutex_lock(&pedi_lock);
+				nr_pedidos_global_M++;
+				pthread_mutex_unlock(&pedi_lock);
+			}
+			millisecondsAfter=getTime();
+			sprintf(msg, "%.2f - %d - %d: %c - %d - PEDIDO \n",(millisecondsAfter-millisecondsBefore)/1000.0, getpid() ,ms_ped.pedido,ms_ped.gen,ms_ped.tempo);
+			write(fd_registos, msg, strlen(msg));
+			write(fd_entrada,&ms_ped,sizeof(struct mensagem_pedido)); 
+		}
+		else{
+			if(ms_ped.gen=='F'){
+				nr_descartados_global_F++;    
+			}
+			else{
+				nr_descartados_global_M++;
+			}
+			millisecondsAfter=getTime();
+			sprintf(msg, "%.2f - %d - %d: %c - %d - DESCARTADO \n",(millisecondsAfter-millisecondsBefore)/1000.0, getpid() ,ms_ped.pedido,ms_ped.gen,ms_ped.tempo);
+			write(fd_registos, msg, strlen(msg));
+		}
+	}
+	return NULL;
 }
 
-
+unsigned long long getTime(){
+	struct timeval *time=malloc(sizeof(struct timeval));
+	gettimeofday(time, NULL);
+	unsigned long long milliseconds = 1000000 * (unsigned long long)((*time).tv_sec) + (unsigned long long)((*time).tv_usec);
+	return milliseconds;
+}
 
 int main(int argc, char **argv)
 {
-    
-    gettimeofday(&before,NULL);
-    millisecondsBefore = 1000000 * (unsigned long long)(before.tv_sec) + (unsigned long long)(before.tv_usec);
-    pthread_t tid_creat, tid_reject; 
-    char regis[MAXL];
-      
-    if (mkfifo("/tmp/entrada",0666)<0){ 
-        if (errno==EEXIST) 
-            printf("FIFO '/tmp/entrada' already exists\n"); 
-        else
-            printf("Can't create FIFO\n"); 
-    }
+	millisecondsBefore = getTime();
+	pthread_t tid_creat, tid_reject; 
+	char regis[MAXL];
 
-	if(mkfifo("/tmp/rejeitados",0666)<0){ 
+	if (mkfifo(FIFO_ENTRADA,0666)<0){ 
+		if (errno==EEXIST) 
+			printf("FIFO '/tmp/entrada' already exists\n"); 
+		else
+			printf("Can't create FIFO\n"); 
+	}
+
+	if(mkfifo(FIFO_REJEITADOS,0666)<0){ 
 		if (errno==EEXIST) 
 			printf("FIFO '/tmp/rejeitados' already exists\n"); 
 		else
 			printf("Can't create FIFO\n"); 
 	}
-   
-    sprintf(regis,"/tmp/ger.%d",getpid());
-    
-    struct criar_pedido *ped;
-    
-    int fd_registos = open(regis, O_WRONLY | O_CREAT | O_EXCL, 0755);
-    int fd_entrada=open("/tmp/entrada",O_WRONLY);
-    
 
-    ped = malloc(sizeof(struct criar_pedido));
-    (*ped).nr_pedidos = atoi(argv[1]);
-    (*ped).tempo=atoi(argv[2]);
-    (*ped).fd_registos = fd_registos;
-    (*ped).fd_entrada = fd_entrada;
-    
-    pthread_create(&tid_creat, NULL, criador_pedidos, (void*)ped);
-    
-    pthread_create(&tid_reject, NULL, rejeita_pedidos, (void*)ped);
-    
-    pthread_join(tid_creat, NULL);
-    pthread_join(tid_reject, NULL);
-    
-    char estatistica[MAXL];
-    sprintf(estatistica, " -Numero de pedidos Masculinos: %d \n -Numero de pedidos Femininos: %d \n -Numero de pedidos Total: %d \n -Numero de rejeicoes recebidas Masculinas: %d \n -Numero de rejeicoes recebidas Femininas: %d \n -Numero de rejeicoes recebidas no Total: %d \n -Numero de rejeicoes descartadas Masculinas: %d \n -Numero de rejeicoes descartadas Femininas: %d \n -Numero de rejeicoes descartadas no Total: %d", nr_pedidos_global_M,nr_pedidos_global_F, (nr_pedidos_global_F+nr_pedidos_global_M), nr_rejeitados_global_M,nr_rejeitados_global_F,(nr_rejeitados_global_M+nr_rejeitados_global_F),nr_descartados_global_M,nr_descartados_global_F,(nr_descartados_global_M+nr_descartados_global_F));
-    
-    write(fd_registos, estatistica, strlen(estatistica));
- 
-    unlink("/tmp/entrada");
-    unlink("/tmp/rejeitados");
-    exit(0);
+	sprintf(regis,"/tmp/ger.%d",getpid());
+
+	struct criar_pedido *ped;
+
+	int fd_registos = open(regis, O_WRONLY | O_CREAT | O_EXCL, 0755);
+	int fd_entrada=open(FIFO_ENTRADA,O_WRONLY);
+
+
+	ped = malloc(sizeof(struct criar_pedido));
+	(*ped).nr_pedidos = atoi(argv[1]);
+	(*ped).tempo=atoi(argv[2]);
+	(*ped).fd_registos = fd_registos;
+	(*ped).fd_entrada = fd_entrada;
+
+	pthread_create(&tid_creat, NULL, criador_pedidos, (void*)ped);
+
+	pthread_create(&tid_reject, NULL, rejeita_pedidos, (void*)ped);
+
+	pthread_join(tid_creat, NULL);
+	pthread_join(tid_reject, NULL);
+
+	char estatistica[MAXL];
+	sprintf(estatistica, " -Numero de pedidos Masculinos: %d \n -Numero de pedidos Femininos: %d \n -Numero de pedidos Total: %d \n -Numero de rejeicoes recebidas Masculinas: %d \n -Numero de rejeicoes recebidas Femininas: %d \n -Numero de rejeicoes recebidas no Total: %d \n -Numero de rejeicoes descartadas Masculinas: %d \n -Numero de rejeicoes descartadas Femininas: %d \n -Numero de rejeicoes descartadas no Total: %d", nr_pedidos_global_M,nr_pedidos_global_F, (nr_pedidos_global_F+nr_pedidos_global_M), nr_rejeitados_global_M,nr_rejeitados_global_F,(nr_rejeitados_global_M+nr_rejeitados_global_F),nr_descartados_global_M,nr_descartados_global_F,(nr_descartados_global_M+nr_descartados_global_F));
+
+	write(fd_registos, estatistica, strlen(estatistica));
+
+	unlink(FIFO_ENTRADA);
+	unlink(FIFO_REJEITADOS);
+	exit(0);
 }
