@@ -1,8 +1,8 @@
-    Como explicitado no enunciado, o comando de invocação do gerador.c é 
+﻿    Como explicitado no enunciado, o comando de invocação do gerador.c é 
 
         ./<nome do executável> <n. pedidos> <max. utilização>
 
-    Este comando deve apenas ser executado antes do da sauna, pois esta apenas vai receber os pedidos que já
+    Este comando deve ser sempre executado antes do da sauna, pois esta apenas vai receber os pedidos que já
 tiverem sido criados. Após o programa ter terminado, no directório /tmp serão criados dois novos ficheiros,
 um de nome ger.pid, sendo pid o identificador do processo, e outro denominado bal.pid. Este regista o output 
 da sauna, estando esta informação noutro ficheiro de texto.

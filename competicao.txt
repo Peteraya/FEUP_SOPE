@@ -1,4 +1,4 @@
-Membros do Grupo 07 da Turma 2
+﻿Membros do Grupo 07 da Turma 2
 
     Pedro Daniel dos Santos Reis
     Pedro Miguel Ferraz Nogueira da Silva
@@ -17,6 +17,10 @@ estão por ocupar. Quando alguém entra, é feito um sem_wait para decrementar o
 mal seja possível (haja um lugar vazio). Se sair alguém, através de um sem_post incrementamos o
 valor para simbolizar o novo lugar vazio. Assim mantém-se o controlo da ordem de entrada e saída
 dos clientes da sauna.
+    Também no ficheiro da sauna, é utilizado um mutex para atualizar de maneira segura uma 
+váriavel global que contém o nº de pessoas que estão a utilizar ou estão em espera para ser 
+utilizada a sauna, apenas quando este valor é igual a 0 (a sauna não contém ninguém nem existe ninguém em 
+espera para a utilizar) é que esta pode satisfazer pedidos do sexo oposto (ou manter-se com o mesmo).
 
 
     

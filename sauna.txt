@@ -1,9 +1,9 @@
-    Como explicitado no enunciado, o comando de invocação do gerador.c é 
+﻿    Como explicitado no enunciado, o comando de invocação do gerador.c é 
 
         ./<nome do executável> <n. lugares>
 
     O número de lugares é a capacidade máxima da sauna.
-
+    Este programa deve ser executado sempre após a execução do gerador.
     O que deverá estar contido será algo deste género (usando um caso de teste com 10 pedidos com um tempo
 máximo de utilização de 10000 milisegundos, e uma sauna com 3 lugares):
     
