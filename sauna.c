@@ -46,13 +46,40 @@ struct mensagem_pedido{
 	int rejei;
 };
 
+
+/**
+*@brief simula o uso da sauna por uma pessoa
+*recebe um pedido como parâmetro atualiza o semáforo e todas as variaveis globais necessárias ao normal funcionamento do programa
+*Faz sleep do tempo que uma pessoa deveria passar na sauna.
+*/
 void* entrar_sauna (void* arg);
+/**
+*@brief retorna o tempo atual em milisegundos
+*/
 unsigned long long getTime(struct timeval *time);
+/**
+*@brief abre todos os ficheiros necessários para o normal funcionamento do programa
+*/
 void openFiles(int *fd_entrada, int *fd_rejeitados, int *fd_registos);
+/**
+*@brief atualiza as variaveis globais nr_pedidos_global_F e nr_pedidos_global_M consoante o género
+*/
 void refreshNrPedidosGlobal(char gen);
-int semGetValue();
+/**
+*@brief Simula o momento antes de entrada na sauna
+*Atualiza o nº de pessoas que estão na sauna, cria a thread que simula o uso da sauna, e atualiza todas as variaveis globais necessárias
+*/
 void startThreadEntrarSauna(pthread_t *tid, struct mensagem_pedido *ms_ped);
+/**
+*@brief rejeita um pedido de entrada na sauna
+*reenvia o pedido para o FIFO_REJEITADOS e atualiza todas as variaveis globais necessárias
+*/ 
 void rejeitaPedido(struct mensagem_pedido *ms_ped, int fd_rejeitados);
+/**
+*@brief Função usada para um final harmonioso do programa
+*"rejeita" um ultimo pedido para o gerador saber que tem de terminar
+*espera que todas as threads criadas pelo programa terminem e escreve as estatisticas no ficheiro de registos
+*/
 void endFunction(int fd_rejeitados, int thread_counter,pthread_t tid[]);
 
 
@@ -170,6 +197,9 @@ void* entrar_sauna (void* arg){
 	return NULL;
 }
 
+/**
+*@brief Recebe todos os pedidos para entrar na sauna, caso o pedido tenha condições para entrar inicializa a sua simulação caso contrário envia para o FIFO_REJEITADOS
+*/
 int main(int argc, char **argv)
 {
 	millisecondsBefore = getTime(&before);

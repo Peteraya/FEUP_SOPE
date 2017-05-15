@@ -47,8 +47,18 @@ struct criar_pedido{
 	int fd_entrada;
 };
 
+/**
+*@brief retorna o tempo atual em milisegundos
+*/
 unsigned long long getTime();
+/**
+*@brief simula a criação de pedidos para entrar numa sauna
+*cria vários pedidos aleatórios e envia-os para o FIFO_ENTRADA para o programa sauna os receber
+*/
 void* criador_pedidos(void* arg);
+/**
+*@brief recebe todos os pedidos que a sauna rejeitou e caso tenham condições reenvia-os para o FIFO_ENTRADA para a sauna os tentar receber novamente
+*/
 void* rejeita_pedidos(void* arg);
 
 void* criador_pedidos(void* arg){
@@ -163,6 +173,10 @@ unsigned long long getTime(){
 	return milliseconds;
 }
 
+/**
+* Alma do programa gerador responsável pela criação dos FIFOS e threads criador_pedidos e rejeita_pedidos 
+* espera que estes terminem e completa harmoniasamente o programa 
+*/
 int main(int argc, char **argv)
 {
 	millisecondsBefore = getTime();
